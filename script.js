@@ -98,24 +98,18 @@ window.changeHowStep = function(index) {
         }
     });
     
-    // Update image and pill
+    // Update image
     const imgEl = document.getElementById('how-img');
-    const pillEl = document.getElementById('how-pill');
     
-    if (imgEl && pillEl) {
+    if (imgEl) {
         // Fade out slightly
         imgEl.style.opacity = '0.2';
-        pillEl.style.transform = 'scale(0.9)';
-        pillEl.style.opacity = '0.5';
         
         setTimeout(() => {
             imgEl.src = howSteps[index].img;
-            pillEl.textContent = howSteps[index].pill;
             
-            // Fade back in
-            imgEl.style.opacity = '0.6';
-            pillEl.style.transform = 'scale(1)';
-            pillEl.style.opacity = '1';
+            // Fade back in with full brightness
+            imgEl.style.opacity = '1';
         }, 300);
     }
 };
