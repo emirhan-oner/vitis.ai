@@ -13,14 +13,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- DM Serif & DM Mono for Adaptive Section -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- MediaPipe Pose API CDN dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
             <a href="#" class="logo">VITIS.</a>
             <ul class="nav-links">
-                <li><a href="#hero">Sistem</a></li>
-                <li><a href="#problem">Problem</a></li>
+                <li><a href="#hero">Nasıl Çalışır</a></li>
+                <li><a href="#problem">Neden Vitis</a></li>
+                <li><a href="#live-demo">Demoyu Dene</a></li>
                 <li><a href="#vision">Vizyon</a></li>
             </ul>
         </div>
@@ -29,62 +34,103 @@
     <main>
         <!-- 1. HERO BÖLÜM -->
         <section class="section hero" id="hero">
+            <div class="hero-bg-grid"></div>
+            <div class="hero-glow-orb orb-1"></div>
+            <div class="hero-glow-orb orb-2"></div>
             <div class="container hero-grid">
                 <div class="hero-text-content">
-                    <h1 class="hero-title">Antrenmanlarını gerçek zamanlı olarak düzelten <span class="highlight-text">AI koç.</span></h1>
-                    <p class="hero-subtitle">Yanlış formu anında tespit eder, seni güvenli şekilde yönlendirir.</p>
-                    <button class="primary-btn" onclick="document.getElementById('demo').scrollIntoView({behavior: 'smooth'})">Sistemi İncele</button>
+                    <div class="hero-badge">
+                        <span class="hero-badge-dot"></span>
+                        <span>Galaxy AI ile Tanışın</span>
+                    </div>
+                    <h1 class="hero-title">Antrenmanda <br><span class="hero-title-accent">Yeni Bir Dönem.</span></h1>
+                    <p class="hero-subtitle">Cihazınızdaki yapay zeka ile her hareketinizi analiz edin. Güvenli, akıllı ve tamamen size özel bir deneyim.</p>
+                    <div class="hero-cta-row">
+                        <button class="primary-btn samsung-btn" onclick="document.getElementById('live-demo').scrollIntoView({behavior: 'smooth'})">Hemen Dene</button>
+                        <a href="#demo" class="samsung-link">Daha fazla bilgi <i class="fa-solid fa-chevron-right"></i></a>
+                    </div>
                 </div>
                 
                 <div class="hero-visual">
-                    <!-- Before / After AI Prototype -->
-                    <div class="mobile-prototype interactive" id="hero-prototype">
-                        <div class="phone-frame">
-                            <div class="phone-notch"></div>
-                            <div class="phone-screen" style="padding: 0; background: #111;">
-                                <div class="player-ui">
-                                    <img src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?q=80&w=500&auto=format&fit=crop" class="player-bg" alt="Plank Workout">
-                                    
-                                    <!-- Top Alert -->
-                                    <div class="top-alert-box animated-notification delay-1">
-                                        <span class="alert-title">HATA ALGILANDI:</span>
-                                        <span class="alert-desc">Kalçayı Çok Düşürdün</span>
-                                    </div>
-                                    
-                                    <!-- CSS Skeleton Overlay -->
-                                    <div class="css-skeleton">
-                                        <!-- Nodes -->
-                                        <div class="sk-node" style="top: 35%; left: 30%;"></div>
-                                        <div class="sk-node" style="top: 40%; left: 45%;"></div>
-                                        <div class="sk-node alert-node" style="top: 45%; left: 60%;"></div>
-                                        <div class="sk-node alert-node" style="top: 40%; left: 65%;"></div>
-                                        <div class="sk-node" style="top: 65%; left: 75%;"></div>
-                                        <div class="sk-node" style="top: 75%; left: 90%;"></div>
-                                        
-                                        <!-- Lines -->
-                                        <div class="sk-line" style="top: 37.5%; left: 30%; width: 16%; transform: rotate(15deg);"></div>
-                                        <div class="sk-line alert-line" style="top: 42.5%; left: 45%; width: 16%; transform: rotate(15deg);"></div>
-                                        <div class="sk-line alert-line" style="top: 42.5%; left: 60%; width: 8%; transform: rotate(-35deg);"></div>
-                                        <div class="sk-line" style="top: 42.5%; left: 65%; width: 28%; transform: rotate(45deg);"></div>
-                                        <div class="sk-line" style="top: 65%; left: 75%; width: 18%; transform: rotate(30deg);"></div>
-                                    </div>
-
-                                    <!-- Bottom Controls -->
-                                    <div class="bottom-player-controls">
-                                        <div class="media-buttons">
-                                            <button class="media-btn"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg></button>
-                                            <button class="media-btn play-pause"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
-                                            <button class="media-btn"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg></button>
-                                        </div>
-                                        <div class="next-workout">Sonraki: Hip Stretch Left</div>
-                                    </div>
-                                </div>
+                    <!-- Samsung One UI inspired card -->
+                    <div class="samsung-ai-card">
+                        <div class="samsung-card-glow"></div>
+                        <div class="hero-ai-canvas-wrap">
+                            <img src="file:///C:/Users/EM%C4%B0RHAN/.gemini/antigravity/brain/961c6879-b0ac-4de7-98b9-9a68bf92d0ac/vitis_app_mockup_1779725811592.png" alt="Vitis AI App UI Mockup" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
+                        <div class="samsung-card-footer">
+                            <div class="samsung-coach-msg">
+                                <div class="samsung-ai-icon"><i class="fa-solid fa-sparkles"></i></div>
+                                <span id="hero-coach-text">Harika görünüyorsun. Böyle devam et.</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- ERİŞİLEBİLİRLİK & GÜVENLİK KATMANI BÖLÜMÜ -->
+        <section class="section safety-features-section" id="safety-features">
+            <div class="container">
+                <div class="safety-features-header text-center animate-on-scroll">
+                    <span class="features-eyebrow">TEKNOLOJİK GÜVENLİK KALKANI</span>
+                    <h2 class="section-title">Hayat Kurtaran <span class="highlight-text">Hassasiyet.</span></h2>
+                    <p class="section-subtitle">Vitis AI, sadece antrenman yaptırmaz; gelişmiş sensör entegrasyonları ve yapay zeka algoritmalarıyla sağlığınızı ve güvenliğinizi 7/24 korur.</p>
+                </div>
+                
+                <div class="features-grid-custom animate-on-scroll">
+                    <!-- Feature 1: Sound Waves / Earbuds -->
+                    <div class="feature-card-custom" id="feat-audio">
+                        <div class="card-icon-container">
+                            <i class="fa-solid fa-headphones-simple audio-glow-icon"></i>
+                            <div class="sound-wave-bars">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <h3>Sesli Canlı Yönlendirme</h3>
+                        <p>Ekranınıza bakarak dengenizi bozmanıza gerek kalmaz. Gelişmiş kulaklık koçluğu, formunuz bozulduğu an sesli uyarılar ve düzeltici komutlar verir.</p>
+                        <div class="card-interactive-visual">
+                            <span class="visual-audio-text">"Kalçayı hafifçe geriye it"</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature 2: Smartwatch Haptics -->
+                    <div class="feature-card-custom" id="feat-watch">
+                        <div class="card-icon-container">
+                            <i class="fa-solid fa-clock watch-glow-icon"></i>
+                            <div class="heart-pulse-wave"></div>
+                        </div>
+                        <h3>Haptik Nabız & Duruş Uyarısı</h3>
+                        <p>Akıllı saatiniz ile entegre çalışarak nabzınız tehlike eşiğini aştığında veya omurga açınız kritik seviyede bozulduğunda bileğinize güçlü titreşim uyarısı gönderir.</p>
+                        <div class="card-interactive-visual">
+                            <div class="visual-heartbeat">
+                                <svg viewBox="0 0 100 30" class="heart-pulse-svg">
+                                    <path d="M0,15 L30,15 L35,5 L40,25 L45,10 L50,20 L55,15 L100,15" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"></path>
+                                </svg>
+                                <span class="visual-bpm"><i class="fa-solid fa-heart pulse-red"></i> 142 bpm</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature 3: Emergency 112 Call -->
+                    <div class="feature-card-custom" id="feat-emergency">
+                        <div class="card-icon-container animate-bell">
+                            <i class="fa-solid fa-bell emergency-glow-icon"></i>
+                            <div class="emergency-radar"></div>
+                        </div>
+                        <h3>112 Acil Yardım Entegrasyonu</h3>
+                        <p>Olası bir düşme, ağırlık altında ezilme veya antrenmanda baygınlık durumunda sistem 5 saniye içinde sesli yanıt alamazsa 112 ve yakınlarınıza otomatik konum gönderir.</p>
+                        <div class="card-interactive-visual">
+                            <div class="visual-countdown">
+                                <span class="countdown-num">5</span>
+                                <span class="countdown-label">Sesli Yanıt Bekleniyor...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- SİSTEM NASIL ÇALIŞIR BÖLÜMÜ -->
         <section class="section how-it-works-section" id="how-it-works">
             <div class="container">
@@ -132,7 +178,7 @@
                     <!-- Right: Visual -->
                     <div class="how-visual-container">
                         <!-- Using a high-quality Unsplash image as a robust placeholder for the generated smartwatch visual -->
-                        <img src="https://images.unsplash.com/photo-1508385082359-f38ae991e8f2?q=80&w=800&auto=format&fit=crop" alt="Smartwatch Plan" class="how-img" id="how-img">
+                        <img src="assets/images/step1.png" alt="Smartwatch Plan" class="how-img" id="how-img">
                         <div class="how-overlay">
                             <div class="how-pill" id="how-pill">Plan Seçiliyor...</div>
                         </div>
@@ -141,6 +187,115 @@
             </div>
         </section>
 
+        <!-- CANLI YAPAY ZEKA DEMOSU (WEBCAM) BÖLÜMÜ -->
+        <section class="section live-demo-section" id="live-demo">
+            <div class="container">
+                <div class="demo-header text-center animate-on-scroll" style="margin-bottom: 3rem;">
+                    <span class="demo-eyebrow">DOĞRUDAN DENEYİMLE</span>
+                    <h2 class="section-title">Canlı Yapay Zeka <span class="highlight-text">Demosu.</span></h2>
+                    <p class="section-subtitle">Tarayıcı tabanlı kameranızı açarak yapay zekanın eklem açılarınızı nasıl analiz ettiğini canlı görün. Kameranız yoksa simülatörle test edin!</p>
+                </div>
+                
+                <div class="live-demo-grid">
+                    <!-- Left Column: Camera Feed & Skeleton Canvas -->
+                    <div class="demo-feed-container">
+                        <!-- Scanner Overlay -->
+                        <div class="demo-scanner-line" id="demo-scanner"></div>
+                        
+                        <!-- Overlay loading/inactive messages -->
+                        <div class="demo-overlay-screen" id="demo-overlay">
+                            <div class="overlay-content">
+                                <div class="overlay-icon-holder">
+                                    <i class="fa-solid fa-video-slash" id="overlay-icon"></i>
+                                </div>
+                                <h3 id="overlay-title">Kamera Pasif</h3>
+                                <p id="overlay-desc">"Demoyu Başlat" butonuna tıklayarak kamera izni verin veya "Simülatörü Başlat" seçeneğini kullanın.</p>
+                                <div class="loader-spinner" id="overlay-spinner" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Video hidden or absolute background -->
+                        <video id="webcam-video" style="display: none;" playsinline></video>
+                        
+                        <!-- Drawing canvas -->
+                        <canvas id="skeleton-canvas"></canvas>
+                        
+                        <!-- Mini tags on stream -->
+                        <div class="stream-badge stream-tag-fps" style="display: none;"><span class="led-dot green"></span> FPS: <span id="fps-val">30</span></div>
+                        <div class="stream-badge stream-tag-status" style="display: none;"><span class="led-dot green" id="status-led"></span> FORM: OK</div>
+                    </div>
+                    
+                    <!-- Right Column: Control Panel & Live Analytics -->
+                    <div class="demo-controls-panel">
+                        <div class="panel-section">
+                            <h4>HAREKET SEÇİN</h4>
+                            <div class="exercise-tabs">
+                                <button class="tab-btn active" id="tab-squat" onclick="selectDemoExercise('squat')">
+                                    <i class="fa-solid fa-person-running"></i> Squat (Çömelme)
+                                </button>
+                                <button class="tab-btn" id="tab-curl" onclick="selectDemoExercise('curl')">
+                                    <i class="fa-solid fa-dumbbell"></i> Biceps Curl (Pazı)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section dashboard-stats">
+                            <div class="stat-box-large">
+                                <div class="stat-label">TEKRAR SAYISI</div>
+                                <div class="stat-value" id="demo-rep-counter">0</div>
+                                <div class="stat-indicator" id="rep-progress-bar"><div class="rep-bar-fill" id="rep-fill"></div></div>
+                            </div>
+                            
+                            <div class="angle-analytics">
+                                <div class="angle-circle-wrap">
+                                    <svg viewBox="0 0 100 100" class="angle-svg">
+                                        <circle cx="50" cy="50" r="40" class="angle-circle-bg"></circle>
+                                        <circle cx="50" cy="50" r="40" class="angle-circle-fill" id="angle-fill-ring" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                    </svg>
+                                    <div class="angle-text-overlay">
+                                        <span id="demo-angle-val">180°</span>
+                                        <small id="angle-label">Knee Angle</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="angle-info-text">
+                                    <div class="info-row">
+                                        <span>Hedef Açı:</span>
+                                        <strong id="target-angle-desc">&lt; 90° (Derinlik)</strong>
+                                    </div>
+                                    <div class="info-row">
+                                        <span>Aktif Açı:</span>
+                                        <strong id="active-angle-desc">Ayakta</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-section coach-console">
+                            <div class="console-header">
+                                <span class="console-dot green"></span>
+                                <span>AI CANLI GERİ BİLDİRİM</span>
+                            </div>
+                            <div class="console-message" id="coach-message">Harekete Başlamak İçin Demoyu Başlatın.</div>
+                        </div>
+                        
+                        <div class="demo-action-buttons">
+                            <button class="demo-main-btn" id="btn-start-camera" onclick="toggleWebcamDemo()">
+                                <i class="fa-solid fa-camera"></i> Demoyu Başlat
+                            </button>
+                            <button class="demo-sec-btn" id="btn-start-simulator" onclick="toggleSimulatorDemo()">
+                                <i class="fa-solid fa-circle-play"></i> Simülatörü Başlat
+                            </button>
+                        </div>
+                        
+                        <div class="demo-disclaimer">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Görüntü verileriniz sunuculara gönderilmez. Tamamen tarayıcınızda (on-device) güvenle işlenir.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- 2. PROBLEM & VİZYON BÖLÜMÜ -->
         <section class="section problem-section bg-white text-black" id="problem">
@@ -304,8 +459,8 @@
             </div>
         </section>
 
-        <!-- 4. ADAPTİF KOÇLUK SİMÜLASYONU -->
-        <section class="section adaptive-section" id="adaptive">
+        <!-- 4. ADAPTİF KOÇLUK (REMOVED - MAP SECTION DELETED) -->
+        <section class="section adaptive-section" id="adaptive" style="display:none;">
             <div class="container">
                 <div class="adaptive-hero-text text-center" style="margin-bottom: 3rem;">
                     <p class="adaptive-tagline">Program seni zorlarsa, Maps gibi — anında yeni plan oluşturulur.</p>
@@ -483,15 +638,56 @@
             </div>
         </section>
 
-        <!-- 6. VİZYON -->
-        <section class="section vision-section" id="vision" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh;">
-            <div class="container vision-container" style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; align-items: center;">
-                <p style="font-size: 1.5rem; color: #b3b3b3; line-height: 1.8; margin-bottom: 4rem; max-width: 900px; font-weight: 400;">
-                    Yanlış antrenmanla vaktini ve sağlığını riske atma. Bu proje, sakatlıkları önleyen bir güvenlik kalkanı gibi çalışır. Sporu hayatının bir parçası haline getirirken, her hareketin güvenli, bilinçli ve maksimum verimle yapılmasını sağlar.
-                </p>
-                <h2 style="font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 800; letter-spacing: -0.04em; color: #fff; line-height: 1.1;">
-                    Sınırlarını <span style="color: #6366f1;">Güvenle</span> Aş.
-                </h2>
+        <!-- 6. VİZYON & SOSYAL ETKİ BÖLÜMÜ -->
+        <section class="section vision-section" id="vision">
+            <div class="container">
+                <div class="social-impact-grid animate-on-scroll">
+                    <!-- Left: Manifesto / Vision -->
+                    <div class="social-impact-text">
+                        <span class="social-eyebrow">SPOR ARACILIĞIYLA SOSYAL DEĞİŞİM VE GELİŞİM</span>
+                        <h2 class="section-title">Herkes İçin Eşit ve <span class="highlight-text">Erişilebilir Spor.</span></h2>
+                        <p class="social-desc">
+                            VİTİS, sporu sadece yüksek bütçeli salonlara ya da pahalı kişisel antrenörlere ulaşabilenlerin ayrıcalığı olmaktan çıkarıyor. Bizim vizyonumuz, sporu maddi imkansızlıklardan, coğrafi engellerden veya bedensel çekincelerden dolayı erişemeyen herkes için tamamen ücretsiz, yargısız ve hayat kurtaran bir dijital koç haline getirmektir.
+                        </p>
+                        <p class="social-desc">
+                            Yapay zeka teknolojisiyle donatılmış VİTİS, toplumsal sağlığı tabana yayarak her evde profesyonel düzeyde, sakatlıklardan uzak ve güvenli spor yapılmasını destekler. Bu, bireysel bir fitness uygulamasının ötesinde, sporu demokratikleştiren sosyal bir değişim ve gelişim hareketidir.
+                        </p>
+                    </div>
+                    
+                    <!-- Right: Accessibility Pillars (Cards) -->
+                    <div class="social-impact-pillars">
+                        <!-- Pillar 1 -->
+                        <div class="social-pillar-card">
+                            <div class="pillar-icon-holder"><i class="fa-solid fa-scale-balanced"></i></div>
+                            <div class="pillar-content">
+                                <h3>Finansal Fırsat Eşitliği</h3>
+                                <p>Aylık yüksek salon abonelikleri ve özel koç ücretlerini tamamen sıfırlayarak, profesyonel düzeyde biyomekanik analiz desteğini herkesin cebine ücretsiz taşıyoruz.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Pillar 2 -->
+                        <div class="social-pillar-card">
+                            <div class="pillar-icon-holder"><i class="fa-solid fa-map-location-dot"></i></div>
+                            <div class="pillar-content">
+                                <h3>Coğrafi Engel Bulunmuyor</h3>
+                                <p>Metropollerdeki en lüks salonlar ile ücra köylerdeki evleri aynı standartta buluşturuyoruz. İnternet ve kamera olan her ev artık gelişmiş bir spor salonu.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Pillar 3 -->
+                        <div class="social-pillar-card">
+                            <div class="pillar-icon-holder"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                            <div class="pillar-content">
+                                <h3>Mahremiyet ve Yargısız Koçluk</h3>
+                                <p>Beden algısı kaygısı veya salonlardaki toplumsal bakışlar nedeniyle spordan uzak kalan bireylere, evlerinin güvenliğinde yargısız ve empati dolu bir koç sunuyoruz.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vision-cta text-center animate-on-scroll" style="margin-top: 6rem;">
+                    <h2 style="font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 800; letter-spacing: -0.04em; color: #fff; line-height: 1.1;">Sınırlarını <span style="color: #6366f1;">Güvenle</span> Aş.</h2>
+                </div>
             </div>
         </section>
     </main>
