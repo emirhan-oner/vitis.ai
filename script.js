@@ -67,19 +67,19 @@ startFeedbackCycle();
 // --- HOW IT WORKS INTERACTIVITY ---
 const howSteps = [
     {
-        img: 'assets/images/step1.png',
+        img: 'görseller/step1.png',
         pill: 'Plan Seçiliyor...'
     },
     {
-        img: 'assets/images/step2.png',
+        img: 'görseller/step2.png',
         pill: 'Kamera Aktif'
     },
     {
-        img: 'assets/images/step3.png',
+        img: 'görseller/step3.png',
         pill: 'İskelet Çıkarılıyor...'
     },
     {
-        img: 'assets/images/step4.png',
+        img: 'görseller/step4.png',
         pill: 'Duruşu Düzeltin'
     }
 ];
