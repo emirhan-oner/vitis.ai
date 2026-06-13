@@ -2,10 +2,14 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Hero Prototype
-    toggleBeforeAfter('before');
+    if (typeof toggleBeforeAfter === 'function') {
+        toggleBeforeAfter('before');
+    }
     
-    // Initialize Demo Prototype
-    changeDemoState('wrong');
+    // Start How It Works Cycle
+    if (typeof startHowCycle === 'function') {
+        startHowCycle();
+    }
 });
 
 // Hero Section: Before/After AI Toggle
@@ -16,16 +20,18 @@ function toggleBeforeAfter(state) {
     
     if (!beforeEl || !afterEl) return;
 
-    btns.forEach(btn => btn.classList.remove('active'));
+    if (btns) {
+        btns.forEach(btn => btn.classList.remove('active'));
+    }
 
     if (state === 'before') {
         beforeEl.classList.add('active');
         afterEl.classList.remove('active');
-        if (btns[0]) btns[0].classList.add('active');
+        if (btns && btns[0]) btns[0].classList.add('active');
     } else {
         beforeEl.classList.remove('active');
         afterEl.classList.add('active');
-        if (btns[1]) btns[1].classList.add('active');
+        if (btns && btns[1]) btns[1].classList.add('active');
     }
 }
 
@@ -59,7 +65,7 @@ function startFeedbackCycle() {
         const currentLine = document.getElementById(lineItems[currentCycleIndex]);
         if(currentLine) currentLine.classList.add('active-line');
         
-    }, 3000);
+    }, 1200); // Hızlandırıldı
 }
 
 startFeedbackCycle();
@@ -84,10 +90,43 @@ const howSteps = [
     }
 ];
 
-window.changeHowStep = function(index) {
+let currentHowStep = 0;
+let howProgressInterval;
+const stepDuration = 2500; // 2.5 saniye olarak güncellendi
+
+window.startHowCycle = function() {
+    clearInterval(howProgressInterval);
+    
+    const progressBar = document.getElementById('how-progress');
+    let startTime = Date.now();
+
+    howProgressInterval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+        let progress = (elapsed / stepDuration) * 100;
+        
+        if (progressBar) {
+            progressBar.style.width = Math.min(progress, 100) + '%';
+        }
+        
+        if (elapsed >= stepDuration) {
+            clearInterval(howProgressInterval); // Mevcut intervali temizle
+            currentHowStep = (currentHowStep + 1) % howSteps.length;
+            window.changeHowStep(currentHowStep, true);
+            window.startHowCycle(); // Döngüyü yeniden başlat
+        }
+    }, 30); // 30ms ile daha da akıcı
+};
+
+window.changeHowStep = function(index, isAuto = false) {
     const stepperContainer = document.getElementById('how-stepper');
     if (!stepperContainer) return;
     
+    // Eğer kullanıcı manuel tıkladıysa döngüyü sıfırla
+    if (!isAuto) {
+        currentHowStep = index;
+        window.startHowCycle();
+    }
+
     // Update active class on cards
     const cards = stepperContainer.querySelectorAll('.step-card');
     cards.forEach((card, i) => {
@@ -475,9 +514,11 @@ function initHeroSkeleton(){
     const canvas = document.getElementById('hero-skeleton-canvas');
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const center = {x: canvas.width/2, y: canvas.height/2};
     let t=0;
     function draw(){
+        if (!document.getElementById('hero-skeleton-canvas')) return;
         ctx.clearRect(0,0,canvas.width,canvas.height);
         const length = 80;
         const angle = Math.sin(t)*0.4; // swing angle
@@ -676,633 +717,936 @@ if (problemSection) {
 })();
 
 // ==========================================
-// CANLI YAPAY ZEKA DEMOSU (WEBCAM & SİMÜLASYON)
+// CANLI YAPAY ZEKA DEMOSU (HIZLI & BASIT)
 // ==========================================
-let demoWebcamActive = false;
-let demoSimulatorActive = false;
-let demoCurrentExercise = 'squat';
-let demoRepsCount = 0;
-let demoAngle = 180;
-let webcamStream = null;
-let mediaPipePose = null;
-let mediaPipeCamera = null;
-let simAnimationId = null;
-let simTime = 0;
-let repState = 'up';
-let lastFrameTime = performance.now();
-let fpsCount = 0;
-let fpsTimer = 0;
 
-// DOM elements
+let demoWebcamActive = false;
+let webcamStream = null;
+let camAnimationId = null;
+let previousFrame = null;
+let motionIntensity = 0;
+let mediapipePose = null;
+let mediapipeCamera = null;
+let mediapipeReady = false;
+let useSimulatedSkeleton = false;
+
 const skeletonCanvas = document.getElementById('skeleton-canvas');
 const webcamVideo = document.getElementById('webcam-video');
 const demoOverlay = document.getElementById('demo-overlay');
-const overlayTitle = document.getElementById('overlay-title');
-const overlayDesc = document.getElementById('overlay-desc');
-const overlayIcon = document.getElementById('overlay-icon');
-const overlaySpinner = document.getElementById('overlay-spinner');
-const repCounterVal = document.getElementById('demo-rep-counter');
-const repFillBar = document.getElementById('rep-fill');
-const angleVal = document.getElementById('demo-angle-val');
-const angleFillRing = document.getElementById('angle-fill-ring');
-const coachMessage = document.getElementById('coach-message');
-const fpsVal = document.getElementById('fps-val');
-const scannerLine = document.getElementById('demo-scanner');
-const targetAngleDesc = document.getElementById('target-angle-desc');
-const activeAngleDesc = document.getElementById('active-angle-desc');
 
-// Skeleton connections mapping (shoulders, arms, torso, legs)
 const poseConnections = [
-    [11, 12], // shoulder to shoulder
-    [11, 13], [13, 15], // left arm
-    [12, 14], [14, 16], // right arm
-    [11, 23], [12, 24], // shoulders to hips
-    [23, 24], // hip to hip
-    [23, 25], [25, 27], // left leg
-    [24, 26], [26, 28]  // right leg
+    [11, 12], [11, 13], [13, 15],
+    [12, 14], [14, 16],
+    [11, 23], [12, 24],
+    [23, 24], [23, 25], [25, 27],
+    [24, 26], [26, 28]
 ];
 
-// Initialize canvas sizing
-function initCanvasSize() {
-    if (!skeletonCanvas) return;
-    const parent = skeletonCanvas.parentElement;
-    skeletonCanvas.width = parent.clientWidth || 640;
-    skeletonCanvas.height = parent.clientHeight || 480;
+// MediaPipe Pose landmark indices matching poseConnections above
+const MEDIAPIPE_POSE_CONNECTIONS = poseConnections;
+
+function initCanvasSize(canvas) {
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    canvas.width = parent.clientWidth || 640;
+    canvas.height = parent.clientHeight || 480;
 }
 
-window.addEventListener('resize', initCanvasSize);
 document.addEventListener('DOMContentLoaded', () => {
-    initCanvasSize();
-    // Default angle circle fill
-    updateAngleRing(180);
+    initCanvasSize(document.getElementById('skeleton-canvas'));
+    initCanvasSize(document.getElementById('skeleton-canvas-2'));
 });
 
-// Calculate Angle between three joints (p1: Hip, p2: Knee, p3: Ankle)
-function getAngle(p1, p2, p3) {
-    if (!p1 || !p2 || !p3) return 180;
-    const rad = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
-    let angle = Math.abs(rad * 180.0 / Math.PI);
-    if (angle > 180.0) angle = 360.0 - angle;
-    return Math.round(angle);
-}
-
-// Update SVG Circular Progress Ring based on Angle
-function updateAngleRing(angle) {
-    if (!angleFillRing) return;
-    // Map angle (from 180 standing to 40 bent) to progress percentage (0% to 100%)
-    const percentage = Math.max(0, Math.min(100, (180 - angle) / (180 - 45) * 100));
-    // SVG circle circumference is 2 * PI * 40 = 251.2
-    const offset = 251.2 - (percentage / 100 * 251.2);
-    angleFillRing.style.strokeDashoffset = offset;
-    
-    // Customize stroke color depending on exercise depth target
-    if (demoCurrentExercise === 'squat') {
-        if (angle < 95) {
-            angleFillRing.style.stroke = '#22c55e'; // Neon Green on target depth
-            angleFillRing.style.filter = 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.6))';
-        } else {
-            angleFillRing.style.stroke = '#6366f1'; // Indigo otherwise
-            angleFillRing.style.filter = 'none';
-        }
-    } else { // biceps curl
-        if (angle < 45) {
-            angleFillRing.style.stroke = '#22c55e'; // Green on maximum curl contraction
-            angleFillRing.style.filter = 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.6))';
-        } else {
-            angleFillRing.style.stroke = '#6366f1';
-            angleFillRing.style.filter = 'none';
-        }
+window.addEventListener('resize', () => {
+    initCanvasSize(document.getElementById('skeleton-canvas'));
+    const c2 = document.getElementById('skeleton-canvas-2');
+    if (videoPoseActive && c2 && c2._ar) {
+        c2.width = c2.parentElement.clientWidth || 640;
+        c2.height = c2.width * c2._ar;
+    } else {
+        initCanvasSize(c2);
     }
+});
+
+function drawTechGrid(ctx, w, h) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.015)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 45) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+    for (let y = 0; y < h; y += 45) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
 }
 
-// Process joint angles and repetitions state machine
-function processAnalytics(landmarks) {
-    let p1, p2, p3;
-    
-    if (demoCurrentExercise === 'squat') {
-        // Calculate Right Knee Angle: Hip (24) -> Knee (26) -> Ankle (28)
-        p1 = landmarks[24];
-        p2 = landmarks[26];
-        p3 = landmarks[28];
-        
-        demoAngle = getAngle(p1, p2, p3);
-        angleVal.textContent = demoAngle + '°';
-        updateAngleRing(demoAngle);
-        
-        // Active angle text status
-        if (demoAngle > 155) {
-            activeAngleDesc.textContent = 'Ayakta (Düz)';
-        } else if (demoAngle < 95) {
-            activeAngleDesc.textContent = 'Mükemmel Derinlik!';
-        } else {
-            activeAngleDesc.textContent = 'Çöküyor...';
-        }
-        
-        // Repetition State Machine
-        if (demoAngle < 95 && repState === 'up') {
-            repState = 'down';
-            coachMessage.textContent = 'Harika derinlik! Kalçayı sıkarak yukarı kalkın.';
-            coachMessage.style.color = '#22c55e';
-            // Pulsing feedback on tag
-            const tag = document.querySelector('.stream-tag-status');
-            if (tag) {
-                tag.style.background = '#22c55e';
-                tag.style.color = '#000';
-            }
-        }
-        
-        if (demoAngle > 145 && repState === 'down') {
-            repState = 'up';
-            demoRepsCount++;
-            repCounterVal.textContent = demoRepsCount;
-            // Update rep fill progress bar
-            const percent = (demoRepsCount % 10) * 10;
-            repFillBar.style.width = (percent === 0 ? 100 : percent) + '%';
-            coachMessage.textContent = 'Tebrikler! Çömelirken nefes alın, kalkarken verin.';
-            coachMessage.style.color = '#fff';
-            
-            const tag = document.querySelector('.stream-tag-status');
-            if (tag) {
-                tag.style.background = 'rgba(0,0,0,0.8)';
-                tag.style.color = '#fff';
-            }
-        }
-        
-    } else { // biceps curl
-        // Calculate Right Elbow Angle: Shoulder (12) -> Elbow (14) -> Wrist (16)
-        p1 = landmarks[12];
-        p2 = landmarks[14];
-        p3 = landmarks[16];
-        
-        demoAngle = getAngle(p1, p2, p3);
-        angleVal.textContent = demoAngle + '°';
-        updateAngleRing(demoAngle);
-        
-        // Active angle text status
-        if (demoAngle > 150) {
-            activeAngleDesc.textContent = 'Kol Düz (Başlangıç)';
-        } else if (demoAngle < 45) {
-            activeAngleDesc.textContent = 'Maksimum Kasılma!';
-        } else {
-            activeAngleDesc.textContent = 'Bükülüyor...';
-        }
-        
-        // Repetition State Machine
-        if (demoAngle < 45 && repState === 'up') {
-            repState = 'down';
-            coachMessage.textContent = 'Tepe noktada kasları sıkın! Yavaşça geri indirin.';
-            coachMessage.style.color = '#22c55e';
-            
-            const tag = document.querySelector('.stream-tag-status');
-            if (tag) {
-                tag.style.background = '#22c55e';
-                tag.style.color = '#000';
-            }
-        }
-        
-        if (demoAngle > 145 && repState === 'down') {
-            repState = 'up';
-            demoRepsCount++;
-            repCounterVal.textContent = demoRepsCount;
-            const percent = (demoRepsCount % 10) * 10;
-            repFillBar.style.width = (percent === 0 ? 100 : percent) + '%';
-            coachMessage.textContent = 'Harika tekrar! Formu bozmadan bükmeye devam edin.';
-            coachMessage.style.color = '#fff';
-            
-            const tag = document.querySelector('.stream-tag-status');
-            if (tag) {
-                tag.style.background = 'rgba(0,0,0,0.8)';
-                tag.style.color = '#fff';
-            }
-        }
-    }
-}
-
-// Draw Neon High-Tech Skeleton Overlay
-function drawSkeleton(ctx, landmarks, width, height) {
-    // Draw lines
-    ctx.strokeStyle = 'rgba(34, 197, 94, 0.45)';
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    
+function drawSkeleton(ctx, lm, w, h) {
+    // connections
     poseConnections.forEach(([i, j]) => {
-        const p1 = landmarks[i];
-        const p2 = landmarks[j];
-        // Ensure joints are visible
-        if (p1 && p2 && p1.visibility > 0.5 && p2.visibility > 0.5) {
+        const a = lm[i], b = lm[j];
+        if (a && b && a.visibility > 0.5 && b.visibility > 0.5) {
             ctx.beginPath();
-            ctx.moveTo(p1.x * width, p1.y * height);
-            ctx.lineTo(p2.x * width, p2.y * height);
+            ctx.moveTo(a.x * w, a.y * h);
+            ctx.lineTo(b.x * w, b.y * h);
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
             ctx.stroke();
         }
     });
-    
-    // Draw joints
-    const mainJoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
-    landmarks.forEach((p, index) => {
-        if (mainJoints.includes(index) && p.visibility > 0.5) {
+    // joints
+    lm.forEach(p => {
+        if (p && p.visibility > 0.5) {
             ctx.beginPath();
-            ctx.arc(p.x * width, p.y * height, 6, 0, Math.PI * 2);
-            ctx.fillStyle = '#22c55e';
-            ctx.shadowColor = '#22c55e';
-            ctx.shadowBlur = 12;
+            ctx.arc(p.x * w, p.y * h, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
             ctx.fill();
-            ctx.shadowBlur = 0; // reset glow for subsequent lines
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
     });
-    
-    // Highlight the active joint node with circular angle badge
-    let activeJointIndex = (demoCurrentExercise === 'squat') ? 26 : 14;
-    const activeJoint = landmarks[activeJointIndex];
-    if (activeJoint && activeJoint.visibility > 0.5) {
-        const x = activeJoint.x * width;
-        const y = activeJoint.y * height;
-        
-        ctx.beginPath();
-        ctx.arc(x, y, 18, 0, Math.PI * 2);
-        ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 2;
-        ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 10;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-        
-        // Label background box
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-        ctx.fillRect(x + 22, y - 12, 54, 24);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x + 22, y - 12, 54, 24);
-        
-        // Label text value
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(demoAngle + '°', x + 49, y);
+}
+
+// --- MEDIAPIPE POSE INTEGRATION ---
+function initMediaPipePose() {
+    if (mediapipePose) return true;
+    if (typeof Pose === 'undefined') {
+        useSimulatedSkeleton = true;
+        return false;
+    }
+    try {
+        mediapipePose = new Pose({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+        });
+        mediapipePose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            selfieMode: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        mediapipePose.onResults(onPoseResults);
+        mediapipeReady = true;
+        useSimulatedSkeleton = false;
+        return true;
+    } catch (e) {
+        console.warn('MediaPipe Pose init failed, using simulated skeleton:', e);
+        useSimulatedSkeleton = true;
+        return false;
     }
 }
 
-// Draw tech grid background
-function drawGrid(ctx, width, height) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
-    ctx.lineWidth = 1;
-    const step = 45;
-    
-    for (let x = 0; x < width; x += step) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-    }
-    
-    for (let y = 0; y < height; y += step) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-    }
-}
+// Smoothing için önceki landmark'ları sakla
+let _prevWebcamLm = null;
+let _prevVideoLm = null;
 
-// Exercise selectors Tab
-window.selectDemoExercise = function(exercise) {
-    if (exercise === demoCurrentExercise) return;
-    
-    demoCurrentExercise = exercise;
-    demoRepsCount = 0;
-    repState = 'up';
-    demoAngle = 180;
-    
-    // Update active tab visuals
-    document.getElementById('tab-squat').classList.toggle('active', exercise === 'squat');
-    document.getElementById('tab-curl').classList.toggle('active', exercise === 'curl');
-    
-    // Reset counter UI
-    repCounterVal.textContent = '0';
-    repFillBar.style.width = '0%';
-    angleVal.textContent = '180°';
-    updateAngleRing(180);
-    
-    // Update targets
-    if (exercise === 'squat') {
-        targetAngleDesc.textContent = '< 90° (Derinlik)';
-        activeAngleDesc.textContent = 'Ayakta';
-        document.getElementById('angle-label').textContent = 'Knee Angle';
-    } else {
-        targetAngleDesc.textContent = '< 45° (Bükülme)';
-        activeAngleDesc.textContent = 'Kol Düz';
-        document.getElementById('angle-label').textContent = 'Elbow Angle';
-    }
-    
-    if (demoWebcamActive) {
-        coachMessage.textContent = 'Hareket algılanıyor... Başlayın.';
-    } else if (demoSimulatorActive) {
-        coachMessage.textContent = 'Simülatör egzersizi değiştirildi.';
-    } else {
-        coachMessage.textContent = 'Egzersiz seçildi. Demoyu başlatın.';
-    }
+// Biyomekanik veri (Stage 3 için)
+let _lastBiomechanics = {
+    torakal_aci: 0,
+    omuz_tipi: 'Normal',
+    omuz_tork_indeksi: 1.0
 };
 
-// Physics animation loop for high-tech skeleton simulator
-function runSimulator() {
-    if (!demoSimulatorActive) return;
-    
-    simTime += 0.025; // Speed multiplier for realistic tempo
-    const canvas = skeletonCanvas;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#08080a';
-    ctx.fillRect(0, 0, width, height);
-    drawGrid(ctx, width, height);
-    
-    // Sinusoidal movement cycle
-    const cycle = (Math.sin(simTime) + 1) / 2; // 0 standing straight, 1 fully crouched or bent
-    
-    const landmarks = Array.from({length: 33}, () => ({x: 0, y: 0, visibility: 0}));
-    
-    let head, shoulder, elbow, wrist, hip, knee, ankle;
-    
-    if (demoCurrentExercise === 'squat') {
-        // Squat physical interpolation points
-        ankle = { x: 0.5, y: 0.85 };
-        knee = { x: 0.5 - 0.10 * cycle, y: 0.70 + 0.03 * cycle };
-        hip = { x: 0.5 - 0.08 * cycle, y: 0.55 + 0.16 * cycle };
-        shoulder = { x: 0.5 - 0.04 * cycle, y: 0.35 + 0.16 * cycle };
-        head = { x: 0.5 - 0.03 * cycle, y: 0.22 + 0.16 * cycle };
-        
-        // Arms reach forward for balance
-        elbow = { x: 0.5 + 0.10 * cycle, y: 0.38 + 0.05 * cycle };
-        wrist = { x: 0.5 + 0.22 * cycle, y: 0.38 + 0.05 * cycle };
-    } else { // biceps curl
-        // Standing static joints
-        ankle = { x: 0.5, y: 0.85 };
-        knee = { x: 0.5, y: 0.68 };
-        hip = { x: 0.5, y: 0.52 };
-        shoulder = { x: 0.5, y: 0.32 };
-        head = { x: 0.5, y: 0.18 };
-        elbow = { x: 0.5, y: 0.44 };
-        
-        // Arm wrist curling up and in
-        wrist = { x: 0.5 + 0.07 * cycle, y: 0.56 - 0.24 * cycle };
-    }
-    
-    // Distribute keypoints symmetric left/right with 3D separation offsets
-    landmarks[11] = { x: shoulder.x - 0.05, y: shoulder.y, visibility: 1 };
-    landmarks[12] = { x: shoulder.x + 0.05, y: shoulder.y, visibility: 1 };
-    
-    landmarks[13] = { x: elbow.x - 0.04, y: elbow.y, visibility: 1 };
-    landmarks[14] = { x: elbow.x + 0.04, y: elbow.y, visibility: 1 };
-    
-    landmarks[15] = { x: wrist.x - 0.04, y: wrist.y, visibility: 1 };
-    landmarks[16] = { x: wrist.x + 0.04, y: wrist.y, visibility: 1 };
-    
-    landmarks[23] = { x: hip.x - 0.04, y: hip.y, visibility: 1 };
-    landmarks[24] = { x: hip.x + 0.04, y: hip.y, visibility: 1 };
-    
-    landmarks[25] = { x: knee.x - 0.03, y: knee.y, visibility: 1 };
-    landmarks[26] = { x: knee.x + 0.03, y: knee.y, visibility: 1 };
-    
-    landmarks[27] = { x: ankle.x - 0.03, y: ankle.y, visibility: 1 };
-    landmarks[28] = { x: ankle.x + 0.03, y: ankle.y, visibility: 1 };
-    
-    drawSkeleton(ctx, landmarks, width, height);
-    processAnalytics(landmarks);
-    
-    // FPS counter calculation
-    const now = performance.now();
-    fpsCount++;
-    if (now - fpsTimer >= 1000) {
-        fpsVal.textContent = Math.round(fpsCount * 1000 / (now - fpsTimer));
-        fpsCount = 0;
-        fpsTimer = now;
-    }
-    
-    simAnimationId = requestAnimationFrame(runSimulator);
+function extractBiomechanicsFromLandmarks(lm) {
+    if (!lm || lm.length < 33) return;
+    const ls = lm[11], rs = lm[12];
+    const lh = lm[23], rh = lm[24];
+    if (!ls || !rs || !lh || !rh || ls.visibility < 0.5 || rs.visibility < 0.5) return;
+
+    const sw = Math.sqrt((rs.x - ls.x) ** 2 + (rs.y - ls.y) ** 2);
+    const hw = Math.sqrt((rh.x - lh.x) ** 2 + (rh.y - lh.y) ** 2);
+    const shoulderZ = (ls.z + rs.z) / 2;
+    const hipZ = (lh.z + rh.z) / 2;
+    const angle = Math.abs(shoulderZ - hipZ) * 100;
+    const ratio = sw / (hw || 0.01);
+    const shoulderType = ratio > 1.35 ? 'Geniş' : 'Normal';
+
+    _lastBiomechanics = {
+        torakal_aci: Math.min(Math.max(Math.round(angle), 20), 90),
+        omuz_tipi: shoulderType,
+        omuz_tork_indeksi: shoulderType === 'Geniş' ? 1.5 : 1.0
+    };
+
+    // Canlı güncelle: Stage 3 formundaki AI verisi
+    const angleEl = document.getElementById('med-bio-angle');
+    const shEl = document.getElementById('med-bio-shoulder');
+    if (angleEl) angleEl.textContent = _lastBiomechanics.torakal_aci;
+    if (shEl) shEl.textContent = _lastBiomechanics.omuz_tipi;
 }
 
-// Stop Biyomechanical Simulator animation loop
-function stopSimulator() {
-    demoSimulatorActive = false;
-    if (simAnimationId) {
-        cancelAnimationFrame(simAnimationId);
-        simAnimationId = null;
+function smoothLandmarks(current, prev, factor) {
+    if (!prev) return current;
+    const smoothed = [];
+    for (let i = 0; i < current.length; i++) {
+        if (prev[i] && current[i].visibility > 0.5) {
+            smoothed[i] = {
+                x: prev[i].x * factor + current[i].x * (1 - factor),
+                y: prev[i].y * factor + current[i].y * (1 - factor),
+                z: prev[i].z * factor + current[i].z * (1 - factor),
+                visibility: current[i].visibility
+            };
+        } else {
+            smoothed[i] = current[i];
+        }
     }
-    document.getElementById('btn-start-simulator').classList.remove('active');
-    document.getElementById('btn-start-simulator').innerHTML = '<i class="fa-solid fa-circle-play"></i> Simülatörü Başlat';
+    return smoothed;
 }
 
-// Toggle Simulated Fail-Safe Demo Mode
-window.toggleSimulatorDemo = function() {
-    if (demoSimulatorActive) {
-        stopSimulator();
-        resetDemoStates();
-    } else {
-        // If webcam is running, shut it off first
-        if (demoWebcamActive) stopWebcam();
-        
-        demoSimulatorActive = true;
-        document.getElementById('btn-start-simulator').classList.add('active');
-        document.getElementById('btn-start-simulator').innerHTML = '<i class="fa-solid fa-circle-pause"></i> Simülatörü Durdur';
-        
-        // Hide overlay splash screen
-        demoOverlay.style.opacity = '0';
-        setTimeout(() => { demoOverlay.style.display = 'none'; }, 300);
-        
-        // Start scanner and tags
-        scannerLine.classList.add('active');
-        document.querySelector('.stream-tag-fps').style.display = 'flex';
-        document.querySelector('.stream-tag-status').style.display = 'flex';
-        
-        // Reset variables
-        demoRepsCount = 0;
-        repCounterVal.textContent = '0';
-        repFillBar.style.width = '0%';
-        simTime = 0;
-        repState = 'up';
-        fpsTimer = performance.now();
-        
-        runSimulator();
-    }
-};
-
-// Process Webcam MediaPipe Results Callback
 function onPoseResults(results) {
     if (!demoWebcamActive) return;
-    
-    // Fade out overlay screen on first frames parsed
-    if (demoOverlay.style.display !== 'none') {
-        demoOverlay.style.opacity = '0';
-        setTimeout(() => { demoOverlay.style.display = 'none'; }, 400);
-        scannerLine.classList.add('active');
-        document.querySelector('.stream-tag-fps').style.display = 'flex';
-        document.querySelector('.stream-tag-status').style.display = 'flex';
-    }
-    
     const canvas = skeletonCanvas;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Draw mirrored background camera frame
-    ctx.save();
-    ctx.clearRect(0, 0, width, height);
-    ctx.scale(-1, 1);
-    ctx.translate(-width, 0);
-    ctx.drawImage(results.image, 0, 0, width, height);
-    ctx.restore();
-    
-    // Draw grid overlay lightly
-    drawGrid(ctx, width, height);
-    
-    if (results.poseLandmarks) {
-        // Coordinate mirroring for direct tracking visualization
-        const mirroredLandmarks = results.poseLandmarks.map(p => ({
-            x: 1 - p.x, // mirror horizontally
-            y: p.y,
-            visibility: p.visibility
-        }));
-        
-        drawSkeleton(ctx, mirroredLandmarks, width, height);
-        processAnalytics(mirroredLandmarks);
-    } else {
-        coachMessage.textContent = 'Kullanıcı taranıyor... Kameranın önünde durun.';
-        coachMessage.style.color = '#ef4444';
-    }
-    
-    // Calculate Web FPS
-    const now = performance.now();
-    fpsCount++;
-    if (now - fpsTimer >= 1000) {
-        fpsVal.textContent = Math.round(fpsCount * 1000 / (now - fpsTimer));
-        fpsCount = 0;
-        fpsTimer = now;
-    }
-}
+    const w = canvas.width, h = canvas.height;
 
-// Stop Webcam and release resources
-function stopWebcam() {
-    demoWebcamActive = false;
-    
-    if (mediaPipeCamera) {
-        try {
-            mediaPipeCamera.stop();
-        } catch (e) {
-            console.warn("MediaPipe camera stop error:", e);
+    if (results && results.image) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(results.image, 0, 0, w, h);
+
+        drawTechGrid(ctx, w, h);
+
+        if (results.poseLandmarks) {
+            const smoothed = smoothLandmarks(results.poseLandmarks, _prevWebcamLm, 0.5);
+            _prevWebcamLm = smoothed;
+            drawSkeleton(ctx, smoothed, w, h);
+            extractBiomechanicsFromLandmarks(smoothed);
+
+            // İlk algılama: side steps gizle, ana yazı sabit kalsın
+            if (!window._poseDetected) {
+                window._poseDetected = true;
+                const sp = document.getElementById('side-steps');
+                if (sp) sp.style.display = 'none';
+            }
         }
-        mediaPipeCamera = null;
+
+        // motion detection from results image
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = w; tempCanvas.height = h;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(results.image, 0, 0, w, h);
+        const imageData = tempCtx.getImageData(0, 0, w, h);
+        const pixels = imageData.data;
+        if (previousFrame) {
+            let diff = 0, count = 0;
+            for (let i = 0; i < pixels.length; i += 8) {
+                const dr = Math.abs(pixels[i] - previousFrame[i]);
+                const dg = Math.abs(pixels[i+1] - previousFrame[i+1]);
+                const db = Math.abs(pixels[i+2] - previousFrame[i+2]);
+                if (dr > 25 || dg > 25 || db > 25) diff++;
+                count++;
+            }
+            motionIntensity = motionIntensity * 0.7 + (diff / count) * 0.3;
+        }
+        previousFrame = new Uint8Array(pixels);
     }
-    
-    if (webcamStream) {
-        webcamStream.getTracks().forEach(track => track.stop());
-        webcamStream = null;
+
+    const motionBar = document.getElementById('motion-bar');
+    const motionLevel = document.getElementById('motion-level');
+    if (motionBar) motionBar.style.width = Math.min(motionIntensity * 100, 100) + '%';
+    if (motionLevel) {
+        if (motionIntensity > 0.15) motionLevel.textContent = 'YÜKSEK';
+        else if (motionIntensity > 0.05) motionLevel.textContent = 'ORTA';
+        else motionLevel.textContent = 'DÜŞÜK';
     }
-    
-    document.getElementById('btn-start-camera').classList.remove('active');
-    document.getElementById('btn-start-camera').innerHTML = '<i class="fa-solid fa-camera"></i> Demoyu Başlat';
+
+    // fps
+    const fpsEl = document.getElementById('fps-val');
+    if (fpsEl) {
+        const now = performance.now();
+        if (!fpsEl._count) { fpsEl._count = 0; fpsEl._time = now; }
+        fpsEl._count++;
+        if (now - fpsEl._time > 1000) {
+            fpsEl.textContent = Math.round(fpsEl._count * 1000 / (now - fpsEl._time));
+            fpsEl._count = 0;
+            fpsEl._time = now;
+        }
+    }
 }
 
-// Reset entire demo console to default passive state
-function resetDemoStates() {
-    demoOverlay.style.display = 'flex';
-    setTimeout(() => { demoOverlay.style.opacity = '1'; }, 50);
-    overlayTitle.textContent = 'Kamera Pasif';
-    overlayDesc.textContent = '"Demoyu Başlat" butonuna tıklayarak kamera izni verin veya "Simülatörü Başlat" seçeneğini kullanın.';
-    overlayIcon.className = 'fa-solid fa-video-slash';
-    overlaySpinner.style.display = 'none';
-    
-    scannerLine.classList.remove('active');
-    document.querySelector('.stream-tag-fps').style.display = 'none';
-    document.querySelector('.stream-tag-status').style.display = 'none';
-    
-    coachMessage.textContent = 'Harekete Başlamak İçin Demoyu Başlatın.';
-    coachMessage.style.color = '';
-    
+// --- FALLBACK SIMULATED SKELETON LOOP (used when MediaPipe is unavailable) ---
+function startWebcamFallback() {
+    if (!demoWebcamActive) return;
     const canvas = skeletonCanvas;
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#08080a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawGrid(ctx, canvas.width, canvas.height);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    if (webcamVideo.readyState >= 2) {
+        ctx.save();
+        ctx.clearRect(0, 0, w, h);
+        ctx.scale(-1, 1);
+        ctx.translate(-w, 0);
+        ctx.drawImage(webcamVideo, 0, 0, w, h);
+        ctx.restore();
+
+        drawTechGrid(ctx, w, h);
+
+        // motion detection via frame diff
+        const imageData = ctx.getImageData(0, 0, w, h);
+        const pixels = imageData.data;
+        if (previousFrame) {
+            let diff = 0, count = 0;
+            for (let i = 0; i < pixels.length; i += 8) {
+                const dr = Math.abs(pixels[i] - previousFrame[i]);
+                const dg = Math.abs(pixels[i+1] - previousFrame[i+1]);
+                const db = Math.abs(pixels[i+2] - previousFrame[i+2]);
+                if (dr > 25 || dg > 25 || db > 25) diff++;
+                count++;
+            }
+            motionIntensity = motionIntensity * 0.7 + (diff / count) * 0.3;
+        }
+        previousFrame = new Uint8Array(pixels);
+
+        // simulated skeleton
+        let wst = window._webcamSimTime || 0;
+        wst += 0.02;
+        window._webcamSimTime = wst;
+        const cycle = (Math.sin(wst) + 1) / 2;
+        const lm = Array.from({length: 33}, () => ({x: 0, y: 0, visibility: 0}));
+        const baseX = 0.5, baseY = 0.5;
+        lm[11] = { x: baseX - 0.05, y: baseY - 0.10, visibility: 1 };
+        lm[12] = { x: baseX + 0.05, y: baseY - 0.10, visibility: 1 };
+        lm[13] = { x: baseX - 0.12 - 0.04 * cycle, y: baseY - 0.02 + 0.03 * cycle, visibility: 1 };
+        lm[14] = { x: baseX + 0.12 + 0.04 * cycle, y: baseY - 0.02 + 0.03 * cycle, visibility: 1 };
+        lm[15] = { x: baseX - 0.20 - 0.06 * cycle, y: baseY + 0.06, visibility: 1 };
+        lm[16] = { x: baseX + 0.20 + 0.06 * cycle, y: baseY + 0.06, visibility: 1 };
+        lm[23] = { x: baseX - 0.04, y: baseY + 0.06, visibility: 1 };
+        lm[24] = { x: baseX + 0.04, y: baseY + 0.06, visibility: 1 };
+        lm[25] = { x: baseX - 0.08 * cycle, y: baseY + 0.18 + 0.06 * cycle, visibility: 1 };
+        lm[26] = { x: baseX + 0.08 * cycle, y: baseY + 0.18 + 0.06 * cycle, visibility: 1 };
+        lm[27] = { x: baseX - 0.06, y: baseY + 0.30, visibility: 1 };
+        lm[28] = { x: baseX + 0.06, y: baseY + 0.30, visibility: 1 };
+        drawSkeleton(ctx, lm, w, h);
+
+        const motionBar = document.getElementById('motion-bar');
+        const motionLevel = document.getElementById('motion-level');
+        if (motionBar) motionBar.style.width = Math.min(motionIntensity * 100, 100) + '%';
+        if (motionLevel) {
+            if (motionIntensity > 0.15) motionLevel.textContent = 'YÜKSEK';
+            else if (motionIntensity > 0.05) motionLevel.textContent = 'ORTA';
+            else motionLevel.textContent = 'DÜŞÜK';
+        }
     }
-    
-    demoRepsCount = 0;
-    repCounterVal.textContent = '0';
-    repFillBar.style.width = '0%';
-    angleVal.textContent = '180°';
-    updateAngleRing(180);
+
+    const fpsEl = document.getElementById('fps-val');
+    if (fpsEl) {
+        const now = performance.now();
+        if (!fpsEl._count) { fpsEl._count = 0; fpsEl._time = now; }
+        fpsEl._count++;
+        if (now - fpsEl._time > 1000) {
+            fpsEl.textContent = Math.round(fpsEl._count * 1000 / (now - fpsEl._time));
+            fpsEl._count = 0;
+            fpsEl._time = now;
+        }
+    }
+
+    camAnimationId = requestAnimationFrame(startWebcamFallback);
 }
 
-// Toggle Camera MediaPipe Live Demo Mode
 window.toggleWebcamDemo = async function() {
     if (demoWebcamActive) {
-        stopWebcam();
-        resetDemoStates();
-    } else {
-        // If simulator is running, shut it off first
-        if (demoSimulatorActive) stopSimulator();
-        
-        demoWebcamActive = true;
-        document.getElementById('btn-start-camera').classList.add('active');
-        document.getElementById('btn-start-camera').innerHTML = '<i class="fa-solid fa-circle-pause"></i> Demoyu Durdur';
-        
-        // Show loading splash
-        overlayTitle.textContent = 'Kamera Açılıyor...';
-        overlayDesc.textContent = 'Lütfen tarayıcı kameranıza izin verin ve yapay zeka modelinin yüklenmesini bekleyin.';
-        overlayIcon.className = 'fa-solid fa-camera-rotate';
-        overlaySpinner.style.display = 'block';
-        
-        // Initialize MediaPipe Pose API if not created
-        if (!mediaPipePose) {
-            mediaPipePose = new Pose({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-            });
-            mediaPipePose.setOptions({
-                modelComplexity: 1,
-                smoothLandmarks: true,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
-            });
-            mediaPipePose.onResults(onPoseResults);
+        demoWebcamActive = false;
+        if (mediapipeCamera) {
+            try { mediapipeCamera.stop(); } catch(e) {}
+            mediapipeCamera = null;
         }
-        
-        // Start streaming webcam feed
-        try {
+        if (camAnimationId) { cancelAnimationFrame(camAnimationId); camAnimationId = null; }
+        if (webcamStream) { webcamStream.getTracks().forEach(t => t.stop()); webcamStream = null; }
+        if (demoOverlay) {
+            demoOverlay.style.display = 'flex';
+            demoOverlay.style.opacity = '1';
+            const t = document.getElementById('overlay-title');
+            const d = document.getElementById('overlay-desc');
+            const b = document.querySelector('#demo-overlay .demo-main-btn');
+            if (t) t.textContent = 'Kamera Pasif';
+            if (d) d.textContent = 'AI hareket analizini başlatmak için kamerayı açın.';
+            if (b) b.style.display = 'inline-flex';
+        }
+        // Side panel reset
+        const si = document.getElementById('side-icon');
+        const st = document.getElementById('side-title');
+        const sd = document.getElementById('side-desc');
+        const ss = document.getElementById('side-steps');
+        if (si) si.className = 'fa-solid fa-camera-slash';
+        if (st) st.textContent = 'Kamera Pasif';
+        if (sd) { sd.textContent = 'İzniniz bekleniyor...'; sd.style.fontSize = '1.1rem'; sd.style.fontWeight = '600'; sd.style.color = '#a0a0a0'; }
+        if (ss) ss.style.display = 'none';
+        window._poseDetected = false;
+        document.querySelectorAll('.demo-main-btn').forEach(b => {
+            b.classList.remove('active');
+            b.textContent = 'Kamerayı Aç';
+        });
+        document.querySelector('.stream-tag-fps').style.display = 'none';
+        document.querySelector('.stream-tag-status').style.display = 'none';
+        document.getElementById('motion-panel').style.display = 'none';
+        previousFrame = null;
+        _prevWebcamLm = null;
+        return;
+    }
+
+    if (videoPoseActive) {
+        stopVideoPose();
+    }
+
+    demoWebcamActive = true;
+    previousFrame = null;
+
+    document.querySelectorAll('.demo-main-btn').forEach(b => {
+        b.classList.add('active');
+        b.innerHTML = '<i class="fa-solid fa-circle-pause"></i> Durdur';
+    });
+
+    // Side panel: loading aşaması
+    window._poseDetected = false;
+    const si = document.getElementById('side-icon');
+    const st = document.getElementById('side-title');
+    const sd = document.getElementById('side-desc');
+    const ss = document.getElementById('side-steps');
+    if (si) si.className = 'fa-solid fa-spinner fa-spin';
+    if (st) st.textContent = 'Model Yükleniyor';
+    if (sd) sd.innerHTML = 'Model tarayıcınıza uygun hale getiriliyor...<br><span style="font-size:0.85rem;color:#818cf8;">Gerçek uygulamada kesinlikle gecikme olmayacak.</span>';
+    if (ss) ss.style.display = 'none';
+
+    try {
+        const useMp = initMediaPipePose() && typeof Camera !== 'undefined';
+
+        if (useMp) {
+            mediapipeCamera = new Camera(webcamVideo, {
+                onFrame: async () => {
+                    if (mediapipePose && demoWebcamActive) {
+                        try { await mediapipePose.send({ image: webcamVideo }); } catch(e) {}
+                    }
+                },
+                width: 640,
+                height: 480
+            });
+            await mediapipeCamera.start();
+        } else {
             webcamStream = await navigator.mediaDevices.getUserMedia({
                 video: { width: 640, height: 480, facingMode: 'user' }
             });
             webcamVideo.srcObject = webcamStream;
-            webcamVideo.play();
-            
-            // Set FPS timers
-            fpsTimer = performance.now();
-            
-            // Initialize camera loop
-            if (!mediaPipeCamera) {
-                mediaPipeCamera = new Camera(webcamVideo, {
-                    onFrame: async () => {
-                        if (demoWebcamActive) {
-                            await mediaPipePose.send({ image: webcamVideo });
-                        }
-                    },
-                    width: 640,
-                    height: 480
-                });
-            }
-            
-            await mediaPipeCamera.start();
-            
-        } catch (err) {
-            console.error("Kamera bağlantısı kurulamadı:", err);
-            stopWebcam();
-            resetDemoStates();
-            alert("Kamera bağlantısı kurulamadı. Lütfen kamera erişim izinlerinizi kontrol edin veya 'Simülatörü Başlat' seçeneğini kullanın.");
+            await webcamVideo.play();
+            startWebcamFallback();
         }
+
+        // Side panel: kamera açıldı, yönlendirme
+        if (si) si.className = 'fa-solid fa-camera';
+        if (st) st.textContent = 'Kamera Hazır';
+        if (sd) sd.innerHTML = 'Lütfen ayağa kalkıp kollarınızı hareket ettirin.';
+        if (ss) ss.style.display = 'flex';
+
+        demoOverlay.style.opacity = '0';
+        setTimeout(() => { demoOverlay.style.display = 'none'; }, 300);
+
+        document.querySelector('.stream-tag-fps').style.display = 'flex';
+        document.querySelector('.stream-tag-status').style.display = 'flex';
+        document.getElementById('motion-panel').style.display = 'block';
+    } catch (err) {
+        console.error(err);
+        demoWebcamActive = false;
+        alert('Kamera açılamadı. İzinleri kontrol edin.');
     }
 };
+
+// --- VIDEO UPLOAD & POSE PROCESSING ---
+let videoPoseActive = false;
+let videoAnimId = null;
+
+window.loadSampleVideo = async function() {
+    const overlay = document.getElementById('demo-overlay-2');
+    const fpsTag = document.querySelector('#demo-stage-2 .stream-tag-fps');
+    const statusBadge = document.getElementById('video-status-badge');
+    const canvas = document.getElementById('skeleton-canvas-2');
+    const video = document.getElementById('uploaded-video');
+
+    initMediaPipePose();
+    if (videoAnimId) { cancelAnimationFrame(videoAnimId); videoAnimId = null; }
+
+    video.muted = true;
+    video.style.display = 'none';
+    video.crossOrigin = 'anonymous';
+    video.src = 'https://kfblottdhsdgbehldcvd.supabase.co/storage/v1/object/public/ornek/aaa.mp4';
+
+    const metaLoaded = new Promise(resolve => {
+        video.addEventListener('loadedmetadata', function onMeta() {
+            video.removeEventListener('loadedmetadata', onMeta);
+            const pw = canvas.parentElement.clientWidth || 640;
+            const r = video.videoHeight / video.videoWidth;
+            canvas.width = pw;
+            canvas.height = pw * r;
+            canvas._ar = r;
+            resolve(true);
+        }, { once: true });
+        video.addEventListener('error', function onErr() {
+            video.removeEventListener('error', onErr);
+            resolve(false);
+        }, { once: true });
+        video.load();
+    });
+    const ok = await metaLoaded;
+    if (!ok) { alert('Örnek video yüklenemedi.'); return; }
+
+    if (mediapipePose) {
+        mediapipePose.setOptions({ selfieMode: false });
+        mediapipePose.onResults(onVideoPoseResults);
+    }
+
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.style.display = 'none', 300);
+    if (fpsTag) fpsTag.style.display = 'flex';
+    if (statusBadge) statusBadge.style.display = 'flex';
+    canvas.style.cursor = 'pointer';
+    canvas.onclick = stopVideoPose;
+
+    try {
+        await video.play();
+        videoPoseActive = true;
+        processVideoFrame();
+    } catch (err) {
+        alert('Örnek video oynatılamadı. Kendi videonuzu yükleyin.');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btn-sample-video');
+    if (btn) btn.addEventListener('click', window.loadSampleVideo);
+});
+
+window.handleVideoUpload = async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const overlay = document.getElementById('demo-overlay-2');
+    const fpsTag = document.querySelector('#demo-stage-2 .stream-tag-fps');
+    const statusBadge = document.getElementById('video-status-badge');
+    const canvas = document.getElementById('skeleton-canvas-2');
+    const video = document.getElementById('uploaded-video');
+
+    // Init MediaPipe
+    initMediaPipePose();
+
+    // Reset onceki video varsa
+    if (videoAnimId) { cancelAnimationFrame(videoAnimId); videoAnimId = null; }
+
+    const url = URL.createObjectURL(file);
+    video.muted = true;
+    video.src = url;
+    video.style.display = 'none';
+
+    // Canvas'i video boyutuna göre ayarla ve oynat
+    await new Promise(resolve => {
+        video.addEventListener('loadedmetadata', function onMeta() {
+            video.removeEventListener('loadedmetadata', onMeta);
+            const pw = canvas.parentElement.clientWidth || 640;
+            const r = video.videoHeight / video.videoWidth;
+            canvas.width = pw;
+            canvas.height = pw * r;
+            canvas._ar = r; // sonradan resize için
+            resolve();
+        }, { once: true });
+        video.load();
+    });
+
+    // Video için selfieMode'u kapat (ayna efekti olmasın)
+    if (mediapipePose) {
+        mediapipePose.setOptions({ selfieMode: false });
+        mediapipePose.onResults(onVideoPoseResults);
+    }
+
+    // Hide overlay, show badges
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.style.display = 'none', 300);
+    if (fpsTag) fpsTag.style.display = 'flex';
+    if (statusBadge) statusBadge.style.display = 'flex';
+
+    // Canvas'a tıklayınca durdur
+    canvas.style.cursor = 'pointer';
+    canvas.onclick = stopVideoPose;
+
+    try {
+        await video.play();
+        videoPoseActive = true;
+        processVideoFrame();
+    } catch (err) {
+        console.warn('Video play failed:', err);
+    }
+};
+
+function onVideoPoseResults(results) {
+    if (!videoPoseActive) return;
+
+    if (results && results.poseLandmarks) {
+        _prevVideoLm = smoothLandmarks(results.poseLandmarks, _prevVideoLm, 0.55);
+        extractBiomechanicsFromLandmarks(_prevVideoLm);
+    }
+
+    // FPS
+    const fpsEl = document.getElementById('fps-val-2');
+    if (fpsEl) {
+        const now = performance.now();
+        if (!fpsEl._count) { fpsEl._count = 0; fpsEl._time = now; }
+        fpsEl._count++;
+        if (now - fpsEl._time > 1000) {
+            fpsEl.textContent = Math.round(fpsEl._count * 1000 / (now - fpsEl._time));
+            fpsEl._count = 0;
+            fpsEl._time = now;
+        }
+    }
+}
+
+let _videoSendBusy = false;
+
+async function processVideoFrame() {
+    if (!videoPoseActive) return;
+    const canvas = document.getElementById('skeleton-canvas-2');
+    const video = document.getElementById('uploaded-video');
+    if (!video || !canvas || video.ended) { stopVideoPose(); return; }
+    if (video.paused || video.readyState < 2) {
+        videoAnimId = requestAnimationFrame(processVideoFrame);
+        return;
+    }
+
+    // Her frame: videoyu ve son bilinen iskeleti çiz
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(video, 0, 0, w, h);
+    drawTechGrid(ctx, w, h);
+    if (_prevVideoLm) drawSkeleton(ctx, _prevVideoLm, w, h);
+
+    // MediaPipe'e gönder (bekleme)
+    if (mediapipePose && !_videoSendBusy) {
+        _videoSendBusy = true;
+        mediapipePose.send({ image: video }).finally(() => {
+            _videoSendBusy = false;
+        });
+    }
+
+    videoAnimId = requestAnimationFrame(processVideoFrame);
+}
+
+function stopVideoPose() {
+    videoPoseActive = false;
+    if (videoAnimId) { cancelAnimationFrame(videoAnimId); videoAnimId = null; }
+    const video = document.getElementById('uploaded-video');
+    if (video) {
+        video.pause();
+        if (video.src && video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
+        video.src = '';
+        video.style.display = 'none';
+    }
+    const overlay = document.getElementById('demo-overlay-2');
+    if (overlay) { overlay.style.display = 'flex'; overlay.style.opacity = '1'; }
+    const fps = document.querySelector('#demo-stage-2 .stream-tag-fps');
+    if (fps) fps.style.display = 'none';
+    const sb = document.getElementById('video-status-badge');
+    if (sb) sb.style.display = 'none';
+    _prevVideoLm = null;
+    // Restore original canvas
+    const cnv = document.getElementById('skeleton-canvas-2');
+    if (cnv) {
+        const ctx = cnv.getContext('2d');
+        ctx.clearRect(0, 0, cnv.width, cnv.height);
+        cnv.style.cursor = 'default';
+        if (cnv._stopHandler) { cnv.removeEventListener('click', cnv._stopHandler); cnv._stopHandler = null; }
+    }
+    // Webcam'e dönünce selfieMode'u geri aç
+    if (mediapipePose) {
+        mediapipePose.setOptions({ selfieMode: true });
+        mediapipePose.onResults(onPoseResults);
+    }
+}
+
+// --- DEMO STAGE SWITCHING ---
+window.switchDemoStage = function(stage) {
+    if (stage !== 1 && demoWebcamActive) {
+        toggleWebcamDemo();
+    }
+    if (stage !== 2 && videoPoseActive) {
+        stopVideoPose();
+    }
+    document.querySelectorAll('.demo-tab-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === stage));
+    document.querySelectorAll('.demo-stage').forEach(s => { s.style.display = 'none'; s.classList.remove('active'); });
+    const target = document.getElementById('demo-stage-' + stage);
+    if (target) {
+        target.style.display = stage === 3 ? 'block' : 'flex';
+        target.offsetHeight;
+        target.classList.add('active');
+    }
+};
+
+// ==========================================
+// KLİNİK KARAR MOTORU (Kural Tabanlı)
+// ==========================================
+const _klinikMotor = (function() {
+    const ruleLibrary = [
+        {
+            id: 'OXF_KIF_01',
+            source: 'Oxford Nuffield Dept. of Orthopaedics',
+            targetMetric: 'torakal_aci',
+            minVal: 40, maxVal: 52,
+            riskLevel: 'Hafif-Orta Kifoz',
+            targetMuscles: ['Rhomboideus', 'Lower Trapezius', 'Serratus Anterior'],
+            contraindications: ['Behind-the-Neck Shoulder Press', 'Heavy Shoulder Overhead Press'],
+            clinicalNote: 'Sırt ekstansörlerinde kronik gerilim. Göğüs grubuna esneklik, sırt grubuna izotonik yüklenme.'
+        },
+        {
+            id: 'STAN_IMP_02',
+            source: 'Stanford Sports Medicine & Biomechanics',
+            targetMetric: 'omuz_tork_indeksi',
+            minVal: 1.2, maxVal: 5.0,
+            riskLevel: 'Subakromiyal Sıkışma Riski',
+            targetMuscles: ['Infraspinatus', 'Supraspinatus', 'Teres Minor (Rotator Cuff)'],
+            contraindications: ['Upright Row', 'Barbell Bench Press (Tam Derinlik)'],
+            clinicalNote: 'Geniş omuz yapısı subakromiyal boşluğu daraltır. Glenohumeral stabilizasyon şart.'
+        },
+        {
+            id: 'HARV_CORE_03',
+            source: 'Harvard Medical School Spine Care Guide',
+            targetMetric: 'torakal_aci',
+            minVal: 40, maxVal: 90,
+            riskLevel: 'Kinetik Zincir Koruma',
+            targetMuscles: ['Transversus Abdominis', 'Multifidus', 'Erector Spinae'],
+            contraindications: ['Heavy Spinal Loading (Traditional Deadlift From Floor)'],
+            clinicalNote: 'Aksiyel yüklenmede omurga stabilitesi için IAP optimizasyonu ve derin core aktivasyonu.'
+        }
+    ];
+
+    function generateProgram(triggered, userRisk, age, weight, fields) {
+        const intensity = age > 60 ? 0.6 : age > 40 ? 0.8 : 1.0;
+        const level = (fields && fields.level) || 'intermediate';
+        const days = (fields && fields.days) || 3;
+        const isDeskJob = (fields && fields.occupation) === 'desk';
+        const pastInjuries = (fields && fields.pastInjuries) || [];
+
+        const exercises = [];
+
+        // Isınma (seviyeye göre)
+        if (level === 'beginner') {
+            exercises.push({ name: 'Glute Bridge', sets: 2, reps: '10-12', rest: '60sn', type: 'Isınma', priority: 'Zorunlu' });
+            exercises.push({ name: 'Cat-Camel', sets: 2, reps: '8', rest: '45sn', type: 'Mobilite', priority: 'Zorunlu' });
+        } else {
+            exercises.push({ name: 'Glute Bridge', sets: 3, reps: '12-15', rest: '60sn', type: 'Isınma', priority: 'Zorunlu' });
+            exercises.push({ name: 'Cat-Camel', sets: 2, reps: '10', rest: '45sn', type: 'Mobilite', priority: 'Zorunlu' });
+        }
+
+        // Masa başı çalışanlara ekstra mobilite
+        if (isDeskJob) {
+            exercises.push({ name: 'Thoracic Extension (Foam Roller)', sets: 2, reps: '10', rest: '45sn', type: 'Mobilite', priority: 'Önerilen' });
+            exercises.push({ name: 'Hip Flexor Stretch', sets: 2, reps: '30sn/side', rest: '30sn', type: 'Esneme', priority: 'Önerilen' });
+        }
+
+        const hasKyphosis = triggered.some(r => r.id === 'OXF_KIF_01');
+        const hasShoulder = triggered.some(r => r.id === 'STAN_IMP_02');
+        const hasCore = triggered.some(r => r.id === 'HARV_CORE_03');
+
+        if (hasKyphosis) {
+            exercises.push({ name: 'Face Pull', sets: 3, reps: '15', rest: '60sn', type: 'Düzeltici', priority: 'Öncelikli' });
+            exercises.push({ name: 'Prone Y-Raise', sets: 3, reps: '12', rest: '60sn', type: 'Düzeltici', priority: 'Öncelikli' });
+            exercises.push({ name: 'Banded Pull-Apart', sets: 3, reps: '20', rest: '45sn', type: 'Aktivasyon', priority: 'Öncelikli' });
+        }
+        if (hasShoulder) {
+            exercises.push({ name: 'External Rotation (Band)', sets: 3, reps: '15', rest: '60sn', type: 'Rotator Cuff', priority: 'Öncelikli' });
+            exercises.push({ name: 'Dumbbell Floor Press', sets: 4, reps: '10-12', rest: '90sn', type: 'Ana', priority: 'Güvenli' });
+            exercises.push({ name: 'Lateral Raise (Light)', sets: 3, reps: '15', rest: '45sn', type: 'Aksesuar', priority: 'Düşük Yük' });
+        }
+        if (hasCore || userRisk === 'hernia') {
+            exercises.push({ name: 'Dead Bug', sets: 3, reps: '10/side', rest: '60sn', type: 'Core', priority: 'Öncelikli' });
+            exercises.push({ name: 'Side Plank', sets: 3, reps: '20-30sn', rest: '45sn', type: 'Core', priority: 'Öncelikli' });
+            exercises.push({ name: 'Seated Leg Press', sets: 4, reps: '10-12', rest: '120sn', type: 'Ana', priority: 'Güvenli' });
+        }
+        // Geçmiş sakatlıklara göre ekstra
+        if (pastInjuries.includes('bel') || pastInjuries.includes('boyun')) {
+            exercises.push({ name: 'Chin Tucks', sets: 2, reps: '10', rest: '30sn', type: 'Düzeltici', priority: 'Önerilen' });
+        }
+        if (pastInjuries.includes('diz')) {
+            exercises.push({ name: 'Terminal Knee Extension (Band)', sets: 3, reps: '15', rest: '45sn', type: 'Düzeltici', priority: 'Önerilen' });
+        }
+        if (pastInjuries.includes('kalca')) {
+            exercises.push({ name: 'Clamshell (Band)', sets: 3, reps: '12/side', rest: '45sn', type: 'Aktivasyon', priority: 'Önerilen' });
+        }
+
+        // Hedefe göre ana egzersiz (seviye ayarlı)
+        const mainSets = level === 'beginner' ? 3 : level === 'advanced' ? 5 : 4;
+        if (fields && fields.goal === 'fatloss') {
+            exercises.push({ name: 'Kettlebell Swing', sets: mainSets, reps: '15-20', rest: '45sn', type: 'Kondisyon', priority: 'Öncelikli' });
+            exercises.push({ name: 'Battle Ropes', sets: 3, reps: '30sn', rest: '30sn', type: 'Kondisyon', priority: 'Opsiyonel' });
+        } else if (fields && fields.goal === 'rehab') {
+            exercises.push({ name: 'Stationary Bike', sets: 1, reps: '15dk', rest: '-', type: 'Kardiyo', priority: 'Isınma' });
+            exercises.push({ name: 'Bodyweight Squat', sets: 3, reps: '12-15', rest: '60sn', type: 'Ana', priority: 'Temel' });
+        } else {
+            exercises.push({ name: 'Goblet Squat', sets: mainSets, reps: '10-12', rest: '90sn', type: 'Ana', priority: 'Temel' });
+            if (level !== 'beginner') {
+                exercises.push({ name: 'Romanian Deadlift', sets: mainSets - 1, reps: '10-12', rest: '90sn', type: 'Ana', priority: 'Temel' });
+            }
+        }
+
+        // Süre hesaplama
+        const dur = days <= 2 ? '35-40 dk' : days <= 3 ? '45-50 dk' : '55-65 dk';
+
+        return {
+            intensity: Math.round(intensity * 100) + '%',
+            duration: dur,
+            exercises,
+            warning: triggered.length > 0
+                ? 'Klinik protokol aktif — kontrendike hareketlerden kaçının.'
+                : 'Standart protokol uygulanıyor.'
+        };
+    }
+
+    function run(userInputs, aiBiomechanics) {
+        const triggered = [];
+        const ta = aiBiomechanics.torakal_aci || 0;
+        const oti = aiBiomechanics.omuz_tork_indeksi || 1.0;
+
+        for (const r of ruleLibrary) {
+            if (r.targetMetric === 'torakal_aci' && ta >= r.minVal && ta <= r.maxVal) triggered.push(r);
+            else if (r.targetMetric === 'omuz_tork_indeksi' && oti >= r.minVal && oti <= r.maxVal) triggered.push(r);
+        }
+
+        const muscles = [...new Set(triggered.flatMap(r => r.targetMuscles))];
+        const contraindications = [...new Set(triggered.flatMap(r => r.contraindications))];
+        const refs = triggered.map(r => ({ institution: r.source, clinicalFinding: r.clinicalNote, category: r.riskLevel }));
+        const program = generateProgram(triggered, userInputs.condition, userInputs.age, userInputs.weight, userInputs);
+
+        return {
+            meta: { age: userInputs.age, goal: userInputs.goal },
+            clinicalResults: {
+                riskStatus: triggered.length > 0 ? 'Kontrollü Klinik Müdahale Gerekli' : 'Normal',
+                targetMuscles: muscles,
+                restrictedExercises: contraindications,
+                literature: refs,
+                program
+            }
+        };
+    }
+
+    return { run };
+})();
+
+// --- MEDICAL PLAN (Stage 3) ---
+window.generateMedicalPlan = function() {
+    const fields = {
+        age: parseInt(document.getElementById('med-age').value),
+        weight: parseInt(document.getElementById('med-weight').value),
+        height: parseInt(document.getElementById('med-height').value),
+        gender: document.getElementById('med-gender').value,
+        level: document.getElementById('med-level').value,
+        days: parseInt(document.getElementById('med-days').value),
+        condition: document.getElementById('med-condition').value,
+        goal: document.getElementById('med-goal').value,
+        occupation: document.getElementById('med-occupation').value,
+        pastInjuries: [...document.querySelectorAll('#med-injuries-container input[type=checkbox]:checked')]
+            .map(cb => cb.value).filter(v => v !== 'none')
+    };
+
+    if (!fields.age || !fields.weight) {
+        alert('Lütfen Yaş ve Kilo bilgilerinizi giriniz.');
+        return;
+    }
+
+    document.getElementById('plan-empty-state').style.display = 'none';
+    document.getElementById('plan-result-state').style.display = 'none';
+    document.getElementById('plan-loading-state').style.display = 'flex';
+
+    setTimeout(() => {
+        document.getElementById('plan-loading-state').style.display = 'none';
+        document.getElementById('plan-result-state').style.display = 'block';
+
+        const bio = _lastBiomechanics;
+        const result = _klinikMotor.run(fields, bio);
+        const cr = result.clinicalResults;
+        const prog = cr.program;
+
+        // --- Terminal header ---
+        let html = '<div style="font-family: monospace; font-size: 0.8rem; color: #888; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1.5rem;">' +
+            '> RUNNING HARVARD BIOMECHANICS PROTOCOL V2.4<br>' +
+            '> YAŞ: ' + fields.age + ' | KİLO: ' + fields.weight + 'kg | BOY: ' + (fields.height || '—') + 'cm | CİNSİYET: ' + (fields.gender === 'male' ? 'ERKEK' : 'KADIN') + '<br>' +
+            '> SEVİYE: ' + fields.level.toUpperCase() + ' | GÜN/HAFTA: ' + fields.days + ' | MESLEK: ' + fields.occupation.toUpperCase() + '<br>' +
+            '> AI TORAKAL AÇI: ' + bio.torakal_aci + '° | OMUZ: ' + bio.omuz_tipi +
+            (fields.pastInjuries.length ? ' | GEÇMİŞ: ' + fields.pastInjuries.join(', ').toUpperCase() : '') +
+            '</div>';
+
+        // --- Profil özeti ---
+        html += '<div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">' +
+            '<span style="background:rgba(99,102,241,0.15); color:#818cf8; padding:0.25rem 0.75rem; border-radius:99px; font-size:0.75rem;">🎯 ' + goalLabel(fields.goal) + '</span>' +
+            '<span style="background:rgba(34,197,94,0.15); color:#22c55e; padding:0.25rem 0.75rem; border-radius:99px; font-size:0.75rem;">📅 ' + fields.days + ' gün/hafta</span>' +
+            '<span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:0.25rem 0.75rem; border-radius:99px; font-size:0.75rem;">💼 ' + occupationLabel(fields.occupation) + '</span>' +
+            '</div>';
+
+        // --- Risk durumu ---
+        const riskColor = cr.riskStatus === 'Normal' ? '#4cd964' : '#ff9500';
+        html += '<p style="color: ' + riskColor + '; font-weight: 600; margin-bottom: 1rem;"><i class="fa-solid fa-shield-halved"></i> ' + cr.riskStatus + '</p>';
+
+        // --- Hedef kaslar ---
+        if (cr.targetMuscles.length > 0) {
+            html += '<div style="margin-bottom: 1.2rem;"><strong style="color:#818cf8; font-size:0.85rem;">HEDEF KAS GRUPLARI</strong><div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem;">' +
+                cr.targetMuscles.map(m => '<span style="background:rgba(99,102,241,0.15); color:#a5b4fc; padding:0.2rem 0.6rem; border-radius:99px; font-size:0.8rem;">' + m + '</span>').join('') +
+                '</div></div>';
+        }
+
+        // --- Yasaklı hareketler ---
+        if (cr.restrictedExercises.length > 0) {
+            html += '<div style="margin-bottom: 1.2rem;"><strong style="color:#ef4444; font-size:0.85rem;">KONTRENDİKE HAREKETLER</strong><ul style="padding-left:1.2rem; margin-top:0.5rem;">' +
+                cr.restrictedExercises.map(e => '<li style="color:#f87171; margin-bottom:0.25rem; font-size:0.85rem;">❌ ' + e + '</li>').join('') +
+                '</ul></div>';
+        }
+
+        // --- Egzersiz programı ---
+        html += '<div style="margin-bottom: 1.2rem;"><strong style="color:#22c55e; font-size:0.85rem;">EGZERSİZ PROGRAMI</strong>' +
+            '<p style="color:#888; font-size:0.78rem; margin-top:0.3rem;">Yoğunluk: ' + prog.intensity + ' | Süre: ' + prog.duration + '</p>' +
+            '<div style="overflow-x:auto;">' +
+            '<table style="width:100%; border-collapse:collapse; margin-top:0.3rem; font-size:0.78rem;">' +
+            '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#888;">' +
+            '<th style="text-align:left; padding:0.35rem 0.4rem;">Egzersiz</th>' +
+            '<th style="padding:0.35rem 0.4rem;">Set</th>' +
+            '<th style="padding:0.35rem 0.4rem;">Tekrar</th>' +
+            '<th style="padding:0.35rem 0.4rem;">Dinlenme</th>' +
+            '<th style="padding:0.35rem 0.4rem;">Öncelik</th></tr></thead><tbody>' +
+            prog.exercises.map(ex => {
+                const pColor = ex.priority === 'Zorunlu' ? '#4cd964' :
+                    ex.priority === 'Öncelikli' ? '#22c55e' :
+                    ex.priority === 'Güvenli' ? '#818cf8' : '#888';
+                return '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+                    '<td style="padding:0.35rem 0.4rem; color:#fff;">' + ex.name + '</td>' +
+                    '<td style="padding:0.35rem 0.4rem; text-align:center; color:#ccc;">' + ex.sets + '</td>' +
+                    '<td style="padding:0.35rem 0.4rem; text-align:center; color:#ccc;">' + ex.reps + '</td>' +
+                    '<td style="padding:0.35rem 0.4rem; text-align:center; color:#ccc;">' + ex.rest + '</td>' +
+                    '<td style="padding:0.35rem 0.4rem; text-align:center;"><span style="color:' + pColor + '; font-size:0.72rem;">' + ex.priority + '</span></td>' +
+                    '</tr>';
+            }).join('') +
+            '</tbody></table></div></div>';
+
+        // --- BMI & metabolizma bilgisi ---
+        if (fields.height) {
+            const bmi = (fields.weight / ((fields.height / 100) ** 2)).toFixed(1);
+            const bmiCat = bmi < 18.5 ? 'Zayıf' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Fazla Kilolu' : 'Obez';
+            html += '<div style="margin-bottom:1.2rem; padding:0.6rem; background:rgba(255,255,255,0.02); border-radius:8px;">' +
+                '<strong style="color:#888; font-size:0.8rem;">VÜCUT KİTLE İNDEKSİ</strong>' +
+                '<p style="color:#fff; font-size:1.1rem; margin:0.2rem 0 0 0;">' + bmi + ' <span style="color:#888; font-size:0.8rem;">(' + bmiCat + ')</span></p></div>';
+        }
+
+        // --- Literatür referansları ---
+        if (cr.literature.length > 0) {
+            html += '<div style="margin-bottom: 1.2rem;"><strong style="color:#f59e0b; font-size:0.85rem;">KLİNİK LİTERATÜR</strong>' +
+                cr.literature.map(l => '<div style="margin-top:0.4rem; padding:0.5rem; background:rgba(245,158,11,0.05); border-left:3px solid #f59e0b; border-radius:4px;">' +
+                    '<strong style="color:#fbbf24; font-size:0.72rem;">' + l.institution + '</strong>' +
+                    '<p style="color:#ccc; font-size:0.78rem; margin:0.2rem 0 0 0;">' + l.clinicalFinding + '</p>' +
+                    '<span style="color:#f59e0b; font-size:0.65rem;">Kategori: ' + l.category + '</span>' +
+                    '</div>').join('') +
+                '</div>';
+        }
+
+        // --- Uyarı ---
+        html += '<div style="margin-top:1rem; padding:0.7rem; background:rgba(99,102,241,0.08); border-left:4px solid #6366f1; border-radius:4px;">' +
+            '<i class="fa-solid fa-microchip" style="color:#818cf8;"></i> ' +
+            '<span style="color:#a5b4fc; font-size:0.82rem;">' + prog.warning + '</span></div>';
+
+        document.getElementById('plan-dynamic-content').innerHTML = html;
+    }, 1200);
+};
+
+function goalLabel(g) {
+    return { strength: 'Güç & Kas', fatloss: 'Kilo Verme', rehab: 'Rehabilitasyon' }[g] || g;
+}
+function occupationLabel(o) {
+    return { desk: 'Masa Başı', standing: 'Ayakta', active: 'Fiziksel Aktif' }[o] || o;
+}

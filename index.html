@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1440">
     <title>Vitis AI | Akıllı Antrenör</title>
     <meta name="description" content="Yanlış formu anında tespit eder, seni güvenli şekilde yönlendirir.">
     <link rel="stylesheet" href="styles.css">
@@ -13,17 +13,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- DM Serif & DM Mono for Adaptive Section -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <!-- MediaPipe Pose API CDN dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
             <a href="#" class="logo">VITIS.</a>
             <ul class="nav-links">
-                <li><a href="#hero">Nasıl Çalışır</a></li>
+                <li><a href="#how-it-works">Nasıl Çalışır</a></li>
                 <li><a href="#problem">Neden Vitis</a></li>
                 <li><a href="#live-demo">Demoyu Dene</a></li>
                 <li><a href="#vision">Vizyon</a></li>
@@ -39,12 +36,8 @@
             <div class="hero-glow-orb orb-2"></div>
             <div class="container hero-grid">
                 <div class="hero-text-content">
-                    <div class="hero-badge">
-                        <span class="hero-badge-dot"></span>
-                        <span>Galaxy AI ile Tanışın</span>
-                    </div>
                     <h1 class="hero-title">Antrenmanda <br><span class="hero-title-accent">Yeni Bir Dönem.</span></h1>
-                    <p class="hero-subtitle">Cihazınızdaki yapay zeka ile her hareketinizi analiz edin. Güvenli, akıllı ve tamamen size özel bir deneyim.</p>
+                    <p class="hero-subtitle">Vitis AI, kameranız ve sensörleriniz aracılığıyla hareketlerinizi gerçek zamanlı analiz eder; formunuzu düzeltir, sağlığınızı izler ve antrenmanınızı tamamen kişiselleştirir.</p>
                     <div class="hero-cta-row">
                         <button class="primary-btn samsung-btn" onclick="document.getElementById('live-demo').scrollIntoView({behavior: 'smooth'})">Hemen Dene</button>
                         <a href="#demo" class="samsung-link">Daha fazla bilgi <i class="fa-solid fa-chevron-right"></i></a>
@@ -52,17 +45,60 @@
                 </div>
                 
                 <div class="hero-visual">
-                    <!-- Samsung One UI inspired card -->
-                    <div class="samsung-ai-card">
-                        <div class="samsung-card-glow"></div>
-                        <div class="hero-ai-canvas-wrap">
-                            <img src="file:///C:/Users/EM%C4%B0RHAN/.gemini/antigravity/brain/961c6879-b0ac-4de7-98b9-9a68bf92d0ac/vitis_app_mockup_1779725811592.png" alt="Vitis AI App UI Mockup" style="width: 100%; height: 100%; object-fit: cover; display: block;">
-                        </div>
-                        <div class="samsung-card-footer">
-                            <div class="samsung-coach-msg">
-                                <div class="samsung-ai-icon"><i class="fa-solid fa-sparkles"></i></div>
-                                <span id="hero-coach-text">Harika görünüyorsun. Böyle devam et.</span>
+                    <img src="görseller/Ekran görüntüsü 2026-06-13 150748.png" alt="Vitis AI App UI Mockup" class="hero-main-img">
+                </div>
+            </div>
+        </section>
+
+        <!-- SİSTEM NASIL ÇALIŞIR BÖLÜMÜ -->
+        <section class="section how-it-works-section" id="how-it-works">
+            <div class="container">
+                <div class="how-header">
+                    <span class="how-eyebrow">SİSTEM NASIL ÇALIŞIR?</span>
+                </div>
+                
+                <div class="how-grid">
+                    <!-- Left: Stepper -->
+                    <div class="how-stepper" id="how-stepper">
+                        <!-- Step 1 (Active) -->
+                        <div class="step-card active" onclick="changeHowStep(0)">
+                            <div class="step-number">01</div>
+                            <div class="step-content">
+                                <h3>Antrenman Planınızı Seçin</h3>
+                                <p>Hedeflerinize uygun profesyonel programlardan size en uygun olanı belirleyin.</p>
                             </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="step-card" onclick="changeHowStep(1)">
+                            <div class="step-number">02</div>
+                            <div class="step-content">
+                                <h3>Kamerayı Konumlandır</h3>
+                                <p>Cihazınızı vücudunuzu tam görecek şekilde yerleştirin ve uygulamayı başlatın.</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="step-card" onclick="changeHowStep(2)">
+                            <div class="step-number">03</div>
+                            <div class="step-content">
+                                <h3>AI Analiz Devreye Girsin</h3>
+                                <p>Sistem saniyeler içinde iskeletinizi çıkarır ve her ekleminizi takip etmeye başlar.</p>
+                            </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="step-card" onclick="changeHowStep(3)">
+                            <div class="step-number">04</div>
+                            <div class="step-content">
+                                <h3>Anında Geri Bildirim Al</h3>
+                                <p>Formunuz bozulduğu an sesli komutlarla profesyonel bir antrenör gibi sizi uyarır.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Visual -->
+                    <div class="how-visual-container">
+                        <img src="görseller/step1.png" alt="Smartwatch Plan" class="how-img" id="how-img">
+                        <div class="how-progress-container">
+                            <div class="how-progress-bar" id="how-progress"></div>
                         </div>
                     </div>
                 </div>
@@ -72,10 +108,10 @@
         <!-- ERİŞİLEBİLİRLİK & GÜVENLİK KATMANI BÖLÜMÜ -->
         <section class="section safety-features-section" id="safety-features">
             <div class="container">
-                <div class="safety-features-header text-center animate-on-scroll">
-                    <span class="features-eyebrow">TEKNOLOJİK GÜVENLİK KALKANI</span>
-                    <h2 class="section-title">Hayat Kurtaran <span class="highlight-text">Hassasiyet.</span></h2>
-                    <p class="section-subtitle">Vitis AI, sadece antrenman yaptırmaz; gelişmiş sensör entegrasyonları ve yapay zeka algoritmalarıyla sağlığınızı ve güvenliğinizi 7/24 korur.</p>
+                <div class="safety-features-header animate-on-scroll" style="text-align: center; width: 100%; max-width: 700px; margin: 0 auto 0 auto;">
+                    <span class="features-eyebrow" style="display: block; text-align: center;">TEKNOLOJİK GÜVENLİK KALKANI</span>
+                    <h2 class="section-title" style="text-align: center;">Hayat Kurtaran <span class="highlight-text">Hassasiyet.</span></h2>
+                    <p class="section-subtitle" style="text-align: center;">Vitis AI, sadece antrenman yaptırmaz; gelişmiş sensör entegrasyonları ve yapay zeka algoritmalarıyla sağlığınızı ve güvenliğinizi 7/24 korur.</p>
                 </div>
                 
                 <div class="features-grid-custom animate-on-scroll">
@@ -131,58 +167,6 @@
             </div>
         </section>
 
-        <!-- SİSTEM NASIL ÇALIŞIR BÖLÜMÜ -->
-        <section class="section how-it-works-section" id="how-it-works">
-            <div class="container">
-                <div class="how-header">
-                    <span class="how-eyebrow">SİSTEM NASIL ÇALIŞIR?</span>
-                </div>
-                
-                <div class="how-grid">
-                    <!-- Left: Stepper -->
-                    <div class="how-stepper" id="how-stepper">
-                        <!-- Step 1 (Active) -->
-                        <div class="step-card active" onclick="changeHowStep(0)">
-                            <div class="step-number">01</div>
-                            <div class="step-content">
-                                <h3>Antrenman Planınızı Seçin</h3>
-                                <p>Hedeflerinize uygun profesyonel programlardan size en uygun olanı belirleyin.</p>
-                            </div>
-                        </div>
-                        <!-- Step 2 -->
-                        <div class="step-card" onclick="changeHowStep(1)">
-                            <div class="step-number">02</div>
-                            <div class="step-content">
-                                <h3>Kamerayı Konumlandır</h3>
-                                <p>Cihazınızı vücudunuzu tam görecek şekilde yerleştirin ve uygulamayı başlatın.</p>
-                            </div>
-                        </div>
-                        <!-- Step 3 -->
-                        <div class="step-card" onclick="changeHowStep(2)">
-                            <div class="step-number">03</div>
-                            <div class="step-content">
-                                <h3>AI Analiz Devreye Girsin</h3>
-                                <p>Sistem saniyeler içinde iskeletinizi çıkarır ve her ekleminizi takip etmeye başlar.</p>
-                            </div>
-                        </div>
-                        <!-- Step 4 -->
-                        <div class="step-card" onclick="changeHowStep(3)">
-                            <div class="step-number">04</div>
-                            <div class="step-content">
-                                <h3>Anında Geri Bildirim Al</h3>
-                                <p>Formunuz bozulduğu an sesli komutlarla profesyonel bir antrenör gibi sizi uyarır.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Right: Visual -->
-                    <div class="how-visual-container">
-                        <!-- Using a high-quality Unsplash image as a robust placeholder for the generated smartwatch visual -->
-                        <img src="görseller/step1.png" alt="Smartwatch Plan" class="how-img" id="how-img">
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- CANLI YAPAY ZEKA DEMOSU (WEBCAM) BÖLÜMÜ -->
         <section class="section live-demo-section" id="live-demo">
@@ -190,107 +174,247 @@
                 <div class="demo-header text-center animate-on-scroll" style="margin-bottom: 3rem;">
                     <span class="demo-eyebrow">DOĞRUDAN DENEYİMLE</span>
                     <h2 class="section-title">Canlı Yapay Zeka <span class="highlight-text">Demosu.</span></h2>
-                    <p class="section-subtitle">Tarayıcı tabanlı kameranızı açarak yapay zekanın eklem açılarınızı nasıl analiz ettiğini canlı görün. Kameranız yoksa simülatörle test edin!</p>
+                    <p class="section-subtitle">Tarayıcı tabanlı kameranızı açarak yapay zekanın eklem açılarınızı nasıl analiz ettiğini canlı görün. Kameranız yoksa simülatörle test edin! <span style="color:#818cf8;">Mobil uygulamamızda yapay zekamız tam kapasite ve yerel çalışacak.</span></p>
                 </div>
                 
-                <div class="live-demo-grid">
-                    <!-- Left Column: Camera Feed & Skeleton Canvas -->
-                    <div class="demo-feed-container">
-                        <!-- Scanner Overlay -->
-                        <div class="demo-scanner-line" id="demo-scanner"></div>
+                <div class="demo-tabs-container" style="position: relative; z-index: 50; display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0;">
+                    <button class="demo-tab-btn active" onclick="switchDemoStage(1)">Canlı Analiz</button>
+                    <button class="demo-tab-btn" onclick="switchDemoStage(2)">Simülatör</button>
+                    <button class="demo-tab-btn" onclick="switchDemoStage(3)">Medikal Profil</button>
+                </div>
+                
+                <!-- STAGE 1: CANLI ANALİZ -->
+                <div class="demo-stage active" id="demo-stage-1" style="display: flex; justify-content: center; align-items: stretch; gap: 2rem; width: 100%; transition: all 0.5s;">
+                    <div class="demo-feed-container" id="demo-feed-1" style="flex: 0 0 auto; transition: all 0.5s; width: 100%; max-width: 800px;">
                         
-                        <!-- Overlay loading/inactive messages -->
                         <div class="demo-overlay-screen" id="demo-overlay">
                             <div class="overlay-content">
-                                <div class="overlay-icon-holder">
-                                    <i class="fa-solid fa-video-slash" id="overlay-icon"></i>
-                                </div>
-                                <h3 id="overlay-title">Kamera Pasif</h3>
-                                <p id="overlay-desc">"Demoyu Başlat" butonuna tıklayarak kamera izni verin veya "Simülatörü Başlat" seçeneğini kullanın.</p>
-                                <div class="loader-spinner" id="overlay-spinner" style="display: none;"></div>
+                                <h3 id="overlay-title" style="font-weight: 400; color: #fff;">Kamera Pasif</h3>
+                                <p id="overlay-desc" style="color: #888; margin-bottom: 1.5rem;">AI hareket analizini başlatmak için kamerayı açın.</p>
+                                <button class="demo-main-btn" onclick="toggleWebcamDemo()" style="background: #fff; color: #000; border: none; font-weight: 500;">Kamerayı Aç</button>
                             </div>
                         </div>
 
-                        <!-- Video hidden or absolute background -->
                         <video id="webcam-video" style="display: none;" playsinline></video>
+                        <canvas id="skeleton-canvas" style="width: 100%; height: 100%; background:#000; border-radius:24px; border:1px solid rgba(255,255,255,0.05);"></canvas>
                         
-                        <!-- Drawing canvas -->
-                        <canvas id="skeleton-canvas"></canvas>
+                        <div class="stream-badge stream-tag-fps" style="display: none; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: none;"><span class="led-dot green"></span> FPS: <span id="fps-val">60</span></div>
+                        <div class="stream-badge stream-tag-status" style="display: none; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: none;"><span class="led-dot green" id="status-led"></span> AI ANALYSE AKTIF</div>
                         
-                        <!-- Mini tags on stream -->
-                        <div class="stream-badge stream-tag-fps" style="display: none;"><span class="led-dot green"></span> FPS: <span id="fps-val">30</span></div>
-                        <div class="stream-badge stream-tag-status" style="display: none;"><span class="led-dot green" id="status-led"></span> FORM: OK</div>
-                    </div>
-                    
-                    <!-- Right Column: Control Panel & Live Analytics -->
-                    <div class="demo-controls-panel">
-                        <div class="panel-section">
-                            <h4>HAREKET SEÇİN</h4>
-                            <div class="exercise-tabs">
-                                <button class="tab-btn active" id="tab-squat" onclick="selectDemoExercise('squat')">
-                                    <i class="fa-solid fa-person-running"></i> Squat (Çömelme)
-                                </button>
-                                <button class="tab-btn" id="tab-curl" onclick="selectDemoExercise('curl')">
-                                    <i class="fa-solid fa-dumbbell"></i> Biceps Curl (Pazı)
-                                </button>
+                        <div id="motion-panel" style="display: none; position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 1rem; color: #fff;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888;">Hareket Yoğunluğu</span>
+                                <span id="motion-level" style="font-size: 0.85rem; font-weight: 600; color: #22c55e;">DÜŞÜK</span>
+                            </div>
+                            <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                <div id="motion-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #6366f1); border-radius: 4px; transition: width 0.15s;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.65rem; font-size: 0.7rem; color: #555;">
+                                <span>AI DEVRE: <span id="ai-active" style="color: #22c55e;">AKTIF</span></span>
+                                <span>MOD: <span id="ai-mode" style="color: #6366f1;">HAREKET TAKİBİ</span></span>
                             </div>
                         </div>
-                        
-                        <div class="panel-section dashboard-stats">
-                            <div class="stat-box-large">
-                                <div class="stat-label">TEKRAR SAYISI</div>
-                                <div class="stat-value" id="demo-rep-counter">0</div>
-                                <div class="stat-indicator" id="rep-progress-bar"><div class="rep-bar-fill" id="rep-fill"></div></div>
-                            </div>
-                            
-                            <div class="angle-analytics">
-                                <div class="angle-circle-wrap">
-                                    <svg viewBox="0 0 100 100" class="angle-svg">
-                                        <circle cx="50" cy="50" r="40" class="angle-circle-bg"></circle>
-                                        <circle cx="50" cy="50" r="40" class="angle-circle-fill" id="angle-fill-ring" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
-                                    </svg>
-                                    <div class="angle-text-overlay">
-                                        <span id="demo-angle-val">180°</span>
-                                        <small id="angle-label">Knee Angle</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="angle-info-text">
-                                    <div class="info-row">
-                                        <span>Hedef Açı:</span>
-                                        <strong id="target-angle-desc">&lt; 90° (Derinlik)</strong>
-                                    </div>
-                                    <div class="info-row">
-                                        <span>Aktif Açı:</span>
-                                        <strong id="active-angle-desc">Ayakta</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="panel-section coach-console">
-                            <div class="console-header">
-                                <span class="console-dot green"></span>
-                                <span>AI CANLI GERİ BİLDİRİM</span>
-                            </div>
-                            <div class="console-message" id="coach-message">Harekete Başlamak İçin Demoyu Başlatın.</div>
-                        </div>
-                        
-                        <div class="demo-action-buttons">
-                            <button class="demo-main-btn" id="btn-start-camera" onclick="toggleWebcamDemo()">
-                                <i class="fa-solid fa-camera"></i> Demoyu Başlat
-                            </button>
-                            <button class="demo-sec-btn" id="btn-start-simulator" onclick="toggleSimulatorDemo()">
-                                <i class="fa-solid fa-circle-play"></i> Simülatörü Başlat
-                            </button>
-                        </div>
-                        
-                        <div class="demo-disclaimer">
+
+                        <div class="demo-footer-info" style="margin-top: 2rem; display: flex; align-items: center; gap: 0.5rem; color: #888; font-size: 0.85rem;">
                             <i class="fa-solid fa-shield-halved"></i>
-                            <span>Görüntü verileriniz sunuculara gönderilmez. Tamamen tarayıcınızda (on-device) güvenle işlenir.</span>
+                            <span>Görüntü verileriniz sunuculara gönderilmez. Tamamen tarayıcınızda işlenir.</span>
+                        </div>
+                    </div>
+
+                    <!-- SIDE PANEL: canlı yönlendirme mesajları -->
+                    <div class="demo-side-panel" id="demo-side-panel">
+                        <div class="side-panel-inner">
+                            <div class="side-icon-wrap">
+                                <i class="fa-solid fa-camera-slash" id="side-icon"></i>
+                            </div>
+                            <h4 id="side-title">Kamera Pasif</h4>
+                            <p id="side-desc" style="font-size:1.1rem; font-weight:600; color:#a0a0a0;">İzniniz bekleniyor...</p>
+                            <div class="side-steps" id="side-steps" style="display:none;">
+                                <div class="side-step">
+                                    <span class="step-dot"></span>
+                                    <span>Model yükleniyor...</span>
+                                </div>
+                                <div class="side-step">
+                                    <span class="step-dot"></span>
+                                    <span>Kamera açılıyor...</span>
+                                </div>
+                                <div class="side-step">
+                                    <span class="step-dot"></span>
+                                    <span>Vücut taranıyor...</span>
+                                </div>
+                            </div>
+                            <div class="side-security">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Görüntüleriniz sadece sizin bilgisayarınızda işlenir, hiçbir yere gönderilmez. Güvenliğiniz bizim için önemli.</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- STAGE 2: SİMÜLATÖR -->
+                <div class="demo-stage" id="demo-stage-2" style="display: none;">
+                    <div class="demo-feed-container">
+                        <div class="demo-overlay-screen" id="demo-overlay-2" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+                            <div class="overlay-content">
+                                <h3 id="overlay-title-2" style="font-weight: 400; color: #fff;">Video Yükleyin</h3>
+                                <p id="overlay-desc-2" style="color: #888;">Bir video dosyası seçin, yapay zeka iskeleti çıkarsın.</p>
+                                <label class="demo-upload-btn" id="upload-btn-label" for="video-upload-input">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Video Yükle
+                                </label>
+                                <input type="file" id="video-upload-input" accept="video/*" style="display:none;" onchange="handleVideoUpload(event)">
+                                <button class="demo-upload-btn" id="btn-sample-video" style="background:transparent; color:#22c55e; border:1px solid rgba(34,197,94,0.3); margin-top:0.6rem;">
+                                    <i class="fa-solid fa-play"></i> Örnek Videoyu Dene
+                                </button>
+                                <div style="margin-top:1rem; font-size:0.75rem; color:#555;">İşlem tamamen yerel yapılır.</div>
+                            </div>
+                        </div>
+                        <video id="uploaded-video" style="display: none;" playsinline muted crossorigin="anonymous"></video>
+                        <canvas id="skeleton-canvas-2" style="width:100%; height:100%; background:#000; border-radius:24px; border:1px solid rgba(255,255,255,0.05);"></canvas>
+                        <div class="stream-badge stream-tag-fps" style="display: none; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: none;"><span class="led-dot green"></span> FPS: <span id="fps-val-2">60</span></div>
+                        <div class="stream-badge stream-tag-status" id="video-status-badge" style="display: none; top:45px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: none;"><span class="led-dot green"></span> VIDEO ANALIZ AKTIF</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: MORFOLOJİK ANALİZ VE MEDİKAL PLAN -->
+                <div class="demo-stage" id="demo-stage-3" style="display: none;">
+                    <div class="medical-plan-container" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 32px; padding: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+                        
+                        <!-- Sol: Veri Girişi Formu -->
+                        <div class="medical-form-side" style="max-height: 75vh; overflow-y: auto; padding-right: 0.5rem;">
+                            <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-clipboard-user" style="color:#6366f1;"></i> Sağlık & Postür Profili</h3>
+                            <p style="color: #aaa; margin-bottom: 2rem; font-size: 0.95rem;">Vücut oranlarınız AI tarafından analiz edildi (Torakal Açı: <span id="med-bio-angle">—</span>°, Omuz: <span id="med-bio-shoulder">—</span>). Size en uygun tıbbi antrenmanı oluşturmak için detayları tamamlayın.</p>
+                            
+                            <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Yaş</label>
+                                    <input type="number" id="med-age" placeholder="25" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none;">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Kilo (kg)</label>
+                                    <input type="number" id="med-weight" placeholder="75" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none;">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Boy (cm)</label>
+                                    <input type="number" id="med-height" placeholder="175" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none;">
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Cinsiyet</label>
+                                    <select id="med-gender" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; appearance: none;">
+                                        <option value="male">Erkek</option>
+                                        <option value="female">Kadın</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Antrenman Seviyesi</label>
+                                    <select id="med-level" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; appearance: none;">
+                                        <option value="beginner">Başlangıç</option>
+                                        <option value="intermediate">Orta</option>
+                                        <option value="advanced">İleri</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Gün / Hafta</label>
+                                    <select id="med-days" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; appearance: none;">
+                                        <option value="2">2 Gün</option>
+                                        <option value="3" selected>3 Gün</option>
+                                        <option value="4">4 Gün</option>
+                                        <option value="5">5 Gün</option>
+                                        <option value="6">6 Gün</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Öncelikli Risk Faktörü</label>
+                                <select id="med-condition" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; appearance: none;">
+                                    <option value="none">Sağlıklı / Risk Yok</option>
+                                    <option value="hernia">Bel / Omurga Hassasiyeti</option>
+                                    <option value="shoulder">Omuz / Rotator Cuff</option>
+                                    <option value="knee">Diz / Menisküs</option>
+                                    <option value="neck">Boyun / Servikal</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Geçmiş Sakatlıklar</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;" id="med-injuries-container">
+                                    <label class="injury-chip" style="display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.8rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; cursor:pointer; color:#ccc; font-size:0.85rem; transition:0.2s;">
+                                        <input type="checkbox" value="bel" style="accent-color:#6366f1;"> Bel
+                                    </label>
+                                    <label class="injury-chip" style="display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.8rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; cursor:pointer; color:#ccc; font-size:0.85rem; transition:0.2s;">
+                                        <input type="checkbox" value="omuz" style="accent-color:#6366f1;"> Omuz
+                                    </label>
+                                    <label class="injury-chip" style="display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.8rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; cursor:pointer; color:#ccc; font-size:0.85rem; transition:0.2s;">
+                                        <input type="checkbox" value="diz" style="accent-color:#6366f1;"> Diz
+                                    </label>
+                                    <label class="injury-chip" style="display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.8rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; cursor:pointer; color:#ccc; font-size:0.85rem; transition:0.2s;">
+                                        <input type="checkbox" value="boyun" style="accent-color:#6366f1;"> Boyun
+                                    </label>
+                                    <label class="injury-chip" style="display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.8rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; cursor:pointer; color:#ccc; font-size:0.85rem; transition:0.2s;">
+                                        <input type="checkbox" value="kalca" style="accent-color:#6366f1;"> Kalça
+                                    </label>
+                                    <label class="injury-chip" style="display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.8rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:99px; cursor:pointer; color:#ccc; font-size:0.85rem; transition:0.2s;">
+                                        <input type="checkbox" value="none" style="accent-color:#ef4444;"> Yok
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Meslek</label>
+                                    <select id="med-occupation" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; appearance: none;">
+                                        <option value="desk">Masa Başı</option>
+                                        <option value="standing">Ayakta Çalışan</option>
+                                        <option value="active">Fiziksel Aktif</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Hedef</label>
+                                    <select id="med-goal" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none;">
+                                        <option value="strength">Güçlenme & Kas Kazanımı</option>
+                                        <option value="fatloss">Kilo Verme</option>
+                                        <option value="rehab">Fizik Tedavi & Rehabilitasyon</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button class="primary-btn samsung-btn" onclick="generateMedicalPlan()" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                                <i class="fa-solid fa-brain"></i> AI Planı Oluştur
+                            </button>
+                        </div>
+                        
+                        <!-- Sağ: Çıktı Ekranı -->
+                        <div class="medical-output-side" style="background: #000; border-radius: 24px; padding: 2rem; border: 1px solid rgba(99,102,241,0.2); position: relative; overflow: hidden;">
+                            <div class="output-glow" style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(99,102,241,0.3); filter: blur(60px); border-radius: 50%;"></div>
+                            
+                            <div id="plan-empty-state" style="text-align: center; color: #555; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-file-medical" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p>Tıbbi analiz sonucunuz burada görünecektir.</p>
+                            </div>
+
+                            <div id="plan-loading-state" style="display: none; text-align: center; height: 100%; flex-direction: column; align-items: center; justify-content: center;">
+                                <div class="loader-spinner"></div>
+                                <p style="color: #6366f1; margin-top: 1rem; font-family: monospace;">Tıbbi veritabanı taranıyor...<br>Biyomekanik kısıtlar hesaplanıyor...</p>
+                            </div>
+
+                            <div id="plan-result-state" style="display: none; position: relative; z-index: 2;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                                    <h4 style="color: #fff; margin:0;"><i class="fa-solid fa-check-circle" style="color: #4cd964; margin-right: 0.5rem;"></i> Güvenli Egzersiz Planı</h4>
+                                    <span style="font-size: 0.75rem; background: rgba(99,102,241,0.2); color: #818cf8; padding: 0.25rem 0.75rem; border-radius: 99px;">AI Onaylı</span>
+                                </div>
+                                
+                                <div id="plan-dynamic-content" style="color: #ccc; font-size: 0.95rem; line-height: 1.6;">
+                                    <!-- JS ile doldurulacak -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -353,8 +477,8 @@
         <!-- 3. ÇÖZÜM & DEMO (EN ÖNEMLİ KISIM) -->
         <section class="section demo-section" id="demo">
             <div class="container">
-                <div class="demo-header text-center">
-                    <h2 class="section-title">Nasıl Çalışır?</h2>
+                <div class="how-header text-center" style="margin-bottom: 2rem;">
+                    <span class="how-eyebrow">MÜKEMMEL SENKRANİZASYON</span>
                 </div>
 
                 <div class="demo-grid" style="align-items: center; gap: 4rem;">
@@ -526,114 +650,6 @@
         </section>
 
 
-        <!-- 5. GÜVENLİK PROTOKOLÜ (SİMÜLASYON) -->
-        <section class="section safety-protocol-section" id="safety-protocol">
-            <div class="ambient-light" id="ambient"></div>
-            <div class="wrap">
-                <div class="pbar"><div class="pf" id="p_bar"></div></div>
-                <div class="dots" id="dots_container"></div>
-
-                <!-- Scenario 1: Breathing -->
-                <div class="scene" id="s0">
-                    <div class="icon-box">
-                        <div class="pulse-ring"></div>
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <path d="M12 3v18M8 8v8M4 11v2M16 8v8M20 11v2"/>
-                        </svg>
-                    </div>
-                    <div class="eyebrow">Solunum Analizi</div>
-                    <div class="headline">Hızlı Nefes<br>Algılandı.</div>
-                    <div class="body-text">Anormal solunum frekansı ve panik belirtileri tespit edildi. Sistem antrenman güvenliği moduna geçiyor.</div>
-                    <div class="stats">
-                        <div class="stat"><div class="sv">48/dk</div><div class="sl">Frekans</div></div>
-                        <div class="stat"><div class="sv">%92</div><div class="sl">Oksijen</div></div>
-                        <div class="stat"><div class="sv">Kritik</div><div class="sl">Eşik</div></div>
-                    </div>
-                </div>
-
-                <!-- Scenario 2: Choking -->
-                <div class="scene" id="s1">
-                    <div class="icon-box">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M19 8l2 2-2 2M15 10h6"/>
-                        </svg>
-                    </div>
-                    <div class="eyebrow">Hareket Analizi</div>
-                    <div class="headline">Boğulma Belirtisi<br>Tespit Edildi.</div>
-                    <div class="body-text">Elin boğaza götürülmesi gibi kritik vücut dilleri görsel yapay zeka tarafından anında tanımlandı.</div>
-                    <div class="stats">
-                        <div class="stat"><div class="sv">Aktif</div><div class="sl">Visual AI</div></div>
-                        <div class="stat"><div class="sv">0.3sn</div><div class="sl">Tepki</div></div>
-                        <div class="stat"><div class="sv">Yüksek</div><div class="sl">Risk</div></div>
-                    </div>
-                </div>
-
-                <!-- Scenario 3: Long Inactivity -->
-                <div class="scene" id="s2">
-                    <div class="icon-box">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                            <path d="M9 16l2 2 4-4"/>
-                        </svg>
-                    </div>
-                    <div class="eyebrow">Aktivite Monitörü</div>
-                    <div class="headline">Uzun Süreli<br>Hareketsizlik.</div>
-                    <div class="body-text">Antrenman ortasında olağandışı duraklama tespit edildi. Kalp ritmi ve hareket sensörleri tepkisizliği doğruluyor.</div>
-                    <div class="stats">
-                        <div class="stat"><div class="sv">60sn+</div><div class="sl">Hareketsiz</div></div>
-                        <div class="stat"><div class="sv">Düşük</div><div class="sl">Metabolik</div></div>
-                        <div class="stat"><div class="sv">Sabit</div><div class="sl">Konum</div></div>
-                    </div>
-                </div>
-
-                <!-- Scenario 4: Verification -->
-                <div class="scene" id="s3">
-                    <div class="eyebrow" style="color: #fff; opacity: 0.6;">Kullanıcı Onayı</div>
-                    <div class="cd-ring">
-                        <svg viewBox="0 0 150 150">
-                            <circle class="cdt" cx="75" cy="75" r="70"/>
-                            <circle class="cdf" id="cdf_circle" cx="75" cy="75" r="70"/>
-                        </svg>
-                        <div class="cdn" id="cdn_val">5</div>
-                    </div>
-                    <div class="headline" style="font-size: clamp(28px, 4vw, 36px);">İyi misiniz?</div>
-                    <div class="body-text" style="margin-bottom: 20px;">Bir sorun algılandı. Yanıt vermezseniz protokol başlatılacaktır.</div>
-                    <div class="voice-hint">
-                        <div class="mic-icon"></div>
-                        <span>"İyiyim" demeyi deneyin</span>
-                    </div>
-                </div>
-
-                <!-- Scenario 5: Emergency UI -->
-                <div class="scene" id="s4">
-                    <div class="eyebrow" style="color: #ff3b30;">Acil Durum Protokolü</div>
-                    <div class="headline" style="font-size: clamp(24px, 4vw, 32px); margin-bottom: 30px;">Yardım Çağrısı Başlatıldı</div>
-                    <div class="call-list">
-                        <div class="ci" id="ci0">
-                            <div class="ci-ico">🚨</div>
-                            <div class="ci-info">
-                                <div class="ci-name">112 Acil Yardım</div>
-                                <div class="ci-num">Konum ve Sağlık Verisi Gönderiliyor</div>
-                            </div>
-                            <div class="ci-status">Arıyor</div>
-                        </div>
-                        <div class="ci" id="ci1">
-                            <div class="ci-ico">🏠</div>
-                            <div class="ci-info">
-                                <div class="ci-name">Acil Durum Kişisi</div>
-                                <div class="ci-num">+90 555 *** ** **</div>
-                            </div>
-                            <div class="ci-status" style="color: rgba(255,255,255,0.4)">Mesaj Atıldı</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- 6. VİZYON & SOSYAL ETKİ BÖLÜMÜ -->
         <section class="section vision-section" id="vision">
@@ -696,6 +712,8 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="script.js"></script>
 </body>
 </html>

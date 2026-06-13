@@ -189,6 +189,118 @@ body {
     align-items: center;
 }
 
+.hero-main-img {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    display: block;
+    border-radius: 28px;
+    object-fit: contain;
+}
+
+/* ── PHONE MOCKUP ── */
+.phone-mockup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.phone-frame {
+    position: relative;
+    width: 300px;
+    background: #1a1a1a;
+    border-radius: 52px;
+    padding: 14px 10px 20px;
+    box-shadow:
+        0 0 0 2px #3a3a3a,
+        0 0 0 4px #111,
+        0 40px 80px rgba(0, 0, 0, 0.7),
+        0 0 60px rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Yan düğmeler */
+.phone-frame::before {
+    content: '';
+    position: absolute;
+    right: -3px;
+    top: 100px;
+    width: 3px;
+    height: 60px;
+    background: #2a2a2a;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 70px 0 #2a2a2a;
+}
+.phone-frame::after {
+    content: '';
+    position: absolute;
+    left: -3px;
+    top: 80px;
+    width: 3px;
+    height: 35px;
+    background: #2a2a2a;
+    border-radius: 4px 0 0 4px;
+    box-shadow: 0 50px 0 #2a2a2a, 0 100px 0 #2a2a2a;
+}
+
+.phone-notch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 32px;
+    background: #1a1a1a;
+    border-radius: 0 0 24px 24px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.phone-notch::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #0d0d0d;
+    border: 2px solid #2a2a2a;
+}
+.phone-notch::after {
+    content: '';
+    width: 60px;
+    height: 6px;
+    background: #0d0d0d;
+    border-radius: 3px;
+}
+
+.phone-screen {
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+    min-height: 580px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phone-screen-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.phone-home-bar {
+    width: 100px;
+    height: 5px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 3px;
+    margin: 10px auto 0;
+}
+
+
 .samsung-ai-card {
     width: 100%;
     max-width: 420px;
@@ -198,12 +310,7 @@ body {
     position: relative;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.1);
-    animation: samsungFloat 6s ease-in-out infinite;
     padding: 8px;
-}
-@keyframes samsungFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
 }
 
 .samsung-card-glow {
@@ -469,6 +576,7 @@ h1, h2, h3, h4 {
     font-size: 1.15rem;
     color: var(--text-gray);
     max-width: 700px;
+    margin: 0 auto;
 }
 
 /* Problem Section */
@@ -1154,12 +1262,12 @@ h1, h2, h3, h4 {
 .giant-line {
     display: block;
     margin-bottom: 1rem;
-    color: white; /* Inactive is solid white */
-    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.15); /* Inactive is dimmed */
+    transition: all 0.5s ease;
 }
 
 .giant-line.active-line {
-    /* Full opacity when active, handled by specific colors below */
+    transform: translateX(20px);
 }
 
 /* Specific colors for each active line */
@@ -2283,6 +2391,37 @@ h1, h2, h3, h4 {
     color: rgba(255, 255, 255, 0.6);
 }
 
+/* STAGE TABS - MINIMALIST */
+.demo-tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #888;
+    padding: 0.5rem 0;
+    border-radius: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.demo-tab-btn:hover {
+    color: #fff;
+}
+.demo-tab-btn.active {
+    color: #fff;
+    border-bottom: 2px solid #fff;
+}
+
+/* DEMO FEED RESPONSIVE ADJUSTMENT */
+.demo-feed-container {
+    position: relative;
+    width: 100%;
+    height: 550px;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+}
+
 /* Visual Side */
 .how-visual-container {
     position: relative;
@@ -2290,8 +2429,27 @@ h1, h2, h3, h4 {
     height: 550px;
     border-radius: 32px;
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
     background: #111;
+    display: flex;
+    flex-direction: column;
+}
+
+.how-progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 10;
+}
+
+.how-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    transition: width 0.1s linear;
 }
 
 .how-img {
@@ -3160,6 +3318,158 @@ h1, h2, h3, h4 {
     letter-spacing: -0.04em;
     color: #fff;
     line-height: 1.1;
+}
+
+/* Video upload button */
+.demo-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.8rem;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+.demo-upload-btn:hover {
+    background: #22c55e;
+    color: #000;
+    transform: scale(1.02);
+}
+
+/* Demo Side Panel */
+.demo-side-panel {
+    flex: 0 0 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.side-panel-inner {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+    padding: 2rem 1.5rem;
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.4s;
+}
+
+.side-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #666;
+    transition: all 0.4s;
+}
+
+#side-icon.fa-camera { color: #22c55e; }
+#side-icon.fa-spinner { color: #6366f1; }
+#side-icon.fa-camera-slash { color: #666; }
+
+#side-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+#side-desc {
+    font-size: 0.82rem;
+    color: #888;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.side-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.side-step {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: #666;
+}
+
+.step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+@media (max-width: 1100px) {
+    #demo-stage-1 {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    .demo-side-panel {
+        flex: none;
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+/* Side panel güvenlik bilgisi */
+.side-security {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.82rem;
+    color: #888;
+    line-height: 1.5;
+    text-align: left;
+}
+.side-security i {
+    color: #22c55e;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* Medical form injury chips */
+.medical-form-side .injury-chip:has(input:checked) {
+    background: rgba(99,102,241,0.2) !important;
+    border-color: #6366f1 !important;
+    color: #a5b4fc !important;
+}
+.medical-form-side::-webkit-scrollbar {
+    width: 4px;
+}
+.medical-form-side::-webkit-scrollbar-track {
+    background: transparent;
+}
+.medical-form-side::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
 }
 
 @media (max-width: 992px) {

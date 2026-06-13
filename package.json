@@ -1,0 +1,21 @@
+{
+  "name": "vitiss.ai",
+  "version": "1.0.0",
+  "description": "**Vitis AI**, yanlış egzersiz formlarını gerçek zamanlı olarak tespit eden ve kullanıcıyı anında uyaran, yapay zeka destekli bir güvenlik ve fitness koçluk sistemidir.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emirhan-oner/vitis.ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emirhan-oner/vitis.ai/issues"
+  },
+  "homepage": "https://github.com/emirhan-oner/vitis.ai#readme",
+  "dependencies": {}
+}
